@@ -1,0 +1,106 @@
+"""Configuration file containing complete specifications for accessing a client's webpage to enable
+scraping of job
+related data
+"""
+# Environment variables-------------------------------------------------------------------------------------------------
+CHROME_DRIVER = "C:\Python36\selenium\webdriver\chrome\chromedriver.exe"
+
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# --------------------------------------          LOG ON DATA                ----------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+
+CLIENT = "House Simple"
+WELCOME_PAGE = "https://www.housesimple.com/admin/dashboard"
+USERNAME = "***********"
+PASSWORD = "**********"
+LOGIN_PAGE = "https://www.housesimple.com/admin/dashboard"
+LANDING_PAGE = "https://www.housesimple.com/admin/dashboard"
+USERNAME_FIELD = "_username"
+PASSWORD_FIELD = "_password"
+LOGIN_BUTTON = "_submit"
+
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# --------------------------------------              REGEXP                 ----------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+
+REGEXP = {
+        "job_page_link": "show",  # matches links on dashboard that point to jobs
+        "day":           r'(?:)(\d{2})(?:\/.*)',  # matches dd of dd/mm/yyyy @ HH:MM
+        "month":         r'(?:\d{2}\/)(\d{2})',  # matches mm of dd/mm/yyyy @ HH:MM
+        "year":              r'(?:.*\/)(\d{4})', # matches yyyy of dd/mm/yyyy @ HH:MM
+        "hour":              r'(?:.*@\D*)(\d{2})', # matches HH of dd/mm/yyyy @ HH:MM
+        "min":              r'(?:.*:)(\d{2})',# matches MM of dd/mm/yyyy @ HH:MM
+}
+
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# --------------------------------------        HTML ID TAGS FOR DATA        ----------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+
+JOB_PAGE_DATA = {
+        "ID":          "Reference",
+        "Address":     "Address",
+        "Beds":        "Number of bedrooms",
+        "Property":    "Property type",
+        "Status":      4,
+        "Appointment": "Appointment time",
+        "Vendor":      "Name"
+}
+JOB_PAGE_TABLES = {
+        "JOB_DATA_TABLE": "table"
+}
+
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# --------------------------------------          HTML BUTTONS               ----------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+
+JOB_PAGE_BUTTONS = {
+        "JOB_DECLINE":           "ctl00_main_ButtonDecline",
+        "JOB_ADD_NOTE":          "ctl00_main_ButtonAddNoteAppointment",
+        "JOB_SAVE_APPT":         "ctl00_main_ButtonSaveAppointment",
+        "JOB_SAVE_NO_APPT":      "ctl00_main_ButtonSaveNoAppointment",
+        "JOB_CHANGE_APPT":       "ctl00_main_ButtonChangeAppointment",
+        "JOB_NO_APPT_DROPDOWN":  "ctl00_main_DropDownListNoAppointment",
+        "JOB_DATE_ENTRY":        "ctl00_main_TextBoxAppointmentDate",
+        "JOB_TIME_ENTRY":        "ctl00_main_TextBoxAppointmentTime",
+        "JOB_FAST_UPLOAD":       "ctl00_main_ButtonFastUpload",
+        "JOB_CONFIRM_FLOORPLAN": "ctl00_main_ConfirmFloorplanUpload",
+        "JOB_CONFIRM_PHOTOS":    "ctl00_main_ConfirmPhotoUpload",
+        "JOB_BACK":              "ctl00_main_ButtonBack"
+}
+UPLOAD_PAGE_BUTTONS = {
+        "UPLOAD_SELECT_FLOORPLAN": "fileFloorplans",
+        "UPLOAD_UPLOAD_FLOORPLAN": "ancFloorplans",
+        "UPLOAD_SELECT_PHOTOS":    "filePhotos",
+        "UPLOAD_UPLOAD_PHOTOS":    "ancPhotos",
+        "UPLOAD_CLOSE":            "ButtonClose",
+}
+
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# --------------------------------------          CLIENT SPECIFIC            ----------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+
+CONFIRMED_HOME_VISIT_TABLE = "sonata-home-visit-block-home-visit-container table table-condensed"
+UNWANTED_NOTES = [": NA", "Sample Selector:", "Agency Branch:", "AA Prestige"]
+JOB_PAGE_SITE_VISIT_ABBRS = {
+        "Appointment date ammended":      "Changed ",
+        "Appointment":                    "appt",
+        "Steve Caballero":                "SC",
+        " due to the reason":             ":",
+        "The Supplier has confirmed the": "Confirmed",
+        "Floorplan":                      "FP",
+        "(DEA)":                          "",
+        "please explain":                 "",
+        "Added by the Supplier:":         "",
+        "I will call again":              " will try again",
+        "Changed at Vendors request":     ""
+}
