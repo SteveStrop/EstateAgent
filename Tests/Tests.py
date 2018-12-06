@@ -1,6 +1,6 @@
 import pickle
 import unittest
-from classes import *
+from Classes import *
 import datetime
 from Parsers import *
 
@@ -90,9 +90,7 @@ class TestKaParser(unittest.TestCase):
         self.assertEqual(v.phone2, "07121456789")
 
     def test__set_agent__(self):
-        a = TestKaParser.test_parser.__set_agent__(
-                "	H Brown of Connells MOB:01908 563 993 TEL:01908 563 993 EVE:N/A")
-        self.assertEqual(a.name, "Connells")
+        a = TestKaParser.test_parser.__set_agent__("Brown of Connells MOB:01908 563 993 TEL:01908 563 993 EVE:N/A")
         self.assertEqual(a.phone1, "01908 563 993")
         self.assertEqual(a.phone2, "01908 563 993")
 

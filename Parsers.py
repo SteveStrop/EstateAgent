@@ -1,7 +1,7 @@
 import re
 import pandas as pd
 import ConfigKA, ConfigHS
-import classes
+import Classes
 
 
 class Parser:
@@ -10,7 +10,8 @@ class Parser:
     Maps 'Config.JOB_PAGE_DATA' to Job class attributes"""
 
     def __init__(self, job, job_page_data, config=None):
-        """job_page_data mirrors Config.JOB_PAGE_DATA"""
+        """job_page_data mirrors ConfigXx.JOB_PAGE_DATA and contains a complete description of a job scraped from a
+        client's website"""
         assert config
         self.client = config.CLIENT
         self.regexp = config.REGEXP
@@ -18,7 +19,6 @@ class Parser:
         self.job = job
         self.__make_job__()
 
-    # Generic methods
     @staticmethod
     def __parse__(regexp, string):
         """@:return substring of string matching 'regexp' or single space."""
@@ -43,15 +43,15 @@ class Parser:
         # parse street address and postcode from address
         try:
             # get valid postcode or set ="" if  none found [0] is first occurrence
-            postcode = (re.findall(classes.Address.postcode_regexp, address_string))[0].strip()
+            postcode = (re.findall(Classes.Address.postcode_regexp, address_string))[0].strip()
         except IndexError:
             postcode = ""
         # strip out found postcode and any N/A. Remove trailing  spaces and commas to make street address:
         street = address_string.replace(postcode, "").replace("N/A", "").strip().strip(",")
         # make Address object
-        address = classes.Address(street, postcode)
+        address = Classes.Address(street, postcode)
         # make Appointment object
-        appt = classes.Appointment(address, time_string)
+        appt = Classes.Appointment(address, time_string)
         return appt
 
     @staticmethod
@@ -78,8 +78,6 @@ class Parser:
         except KeyError:
             return None
 
-    # Polymorphic methods
-
     @staticmethod
     def __set_beds__(beds):
         return beds
@@ -89,7 +87,7 @@ class Parser:
         return p_type
 
     @staticmethod
-    def __set_id__(id_string):
+    def __set_id__(id_):
         """Parse unique ID for job"""
         return NotImplementedError
 
@@ -102,7 +100,7 @@ class Parser:
         """ Map each data field from the job page to an attribute of self.job"""
         return NotImplementedError
 
-    def __set_agent__(self, agent_string):
+    def __set_agent__(self,agent):
         return NotImplementedError
 
     def __set_vendor__(self, vendor_string):
@@ -125,9 +123,36 @@ class KaParser(Parser):
     """ Key Agent specific parser."""
 
     def __init__(self, job, job_page_data):
+        """job_page_data mirrors ConfigXx.JOB_PAGE_DATA and contains a complete description of a job scraped from a
+        client's website"""
         super().__init__(job, job_page_data, config=ConfigKA)
 
-    # Polymorphic methods
+    @staticmethod
+    def __set_id__(id_):
+        """Parse unique ID for job"""
+        try:
+            assert id_.isdigit()
+        except AssertionError:
+            return None
+        return id_
+
+    @staticmethod
+    def __set_notes__(notes):
+        """Return a list of notes with unwanted lines removed"""
+        # strip out any backslashes to deal with NA and N/A and split the note into a set of lines
+        notes = set(notes.replace("/", "").split("\n"))
+        # loop through each line of notes and add to deletion set those lines containing an unwanted note
+        unwanted_notes = {note for note in notes for unwanted in ConfigKA.UNWANTED_NOTES if unwanted in note}
+        # delete lines in common between both sets leaving only the lines not marked for deletion
+        # and convert to a list
+        notes = sorted(list(notes.difference(unwanted_notes)))
+        # remove all blank entries
+        try:
+            while True:
+                notes.remove("")
+        except ValueError:
+            pass
+        return notes
 
     def __make_job__(self):
         """ Map each data field from the job page to an attribute of self.job"""
@@ -144,70 +169,55 @@ class KaParser(Parser):
         self.job.photos = self.__set_photos__(self.job_page_data["JOB_DATA_PHOTOS"])
         self.job.specific_reqs = self.__set_specific_reqs__(self.job_page_data["JOB_DATA_SPECIFIC_REQS_TABLE"])
         self.job.system_notes = self.__set_system_notes__(self.job_page_data["JOB_DATA_HISTORY_TABLE"])
-        self.job.status = classes.Job.ACTIVE
+        self.job.status = Classes.Job.ACTIVE
 
-    @staticmethod
-    def __set_id__(id_string):
-        """Parse unique ID for job"""
+    def __set_agent__(self,agent):
+        # parse agent name from notes id as this contains branch name info
+        notes = self.job_page_data["JOB_DATA_NOTES"]
+        agent_name = self.__parse__(self.regexp["agent"], notes).strip()
+
+        # parse phone numbers from agent id
+        tel = self.__parse__(self.regexp["phone1"], agent).strip()
+        mob = self.__parse__(self.regexp["agent_mob"], agent).strip()
+        # todo use agent tel number to identify branch will need a new entry in ConfigKA AGENT_BRANCH
+        return Classes.Agent(name=agent_name, phone1=tel, phone2=mob)
+
+    def __set_vendor__(self, vendor):
+        """Parse vendor for name and first two telephone numbers if present.
+        @:return Vendor object"""
+        vendor_name = self.__parse__(self.regexp["vendor"], vendor).strip()
+        tel = self.__parse__(self.regexp["day"], vendor).strip()
+        mob = self.__parse__(self.regexp["vendor_mob"], vendor).strip()
+        eve = self.__parse__(self.regexp["eve"], vendor).strip()
+        return Classes.Vendor(name=vendor_name, phone1=tel, phone2=mob or eve)
+
+    def __reformat_date__(self, time):
+        """ convert 'time' from ddd-dd mmm yy HHMM' format to 'dd-mm-yyyy HH:MM'
+        @:param: time : 'ddd-mmm yy HHMM'
+        @:return  'dd-mm-yyyy HH:MM' or None if unable to convert"""
         try:
-            assert id_string.isdigit()
+            assert isinstance(time, str)
         except AssertionError:
             return None
-        return id_string
-
-    def __set_agent__(self, agent_string):
-        agent_name = self.__parse__(self.regexp["agent"], agent_string).replace('H Brown of', "").strip()
-        tel = self.__parse__(self.regexp["phone1"], agent_string).strip()
-        mob = self.__parse__(self.regexp["agent_mob"], agent_string).strip()
-        # todo use agent tel number to identify branch will need a new entry in ConfigKA AGENT_BRANCH
-        return classes.Agent(name=agent_name, phone1=tel, phone2=mob)
-
-    def __set_vendor__(self, vendor_string):
-        """Parse vendor_string for name and first two telephone numbers if present.
-        @:return Vendor object"""
-        vendor_name = self.__parse__(self.regexp["vendor"], vendor_string).strip()
-        tel = self.__parse__(self.regexp["day"], vendor_string).strip()
-        mob = self.__parse__(self.regexp["vendor_mob"], vendor_string).strip()
-        eve = self.__parse__(self.regexp["eve"], vendor_string).strip()
-        return classes.Vendor(name=vendor_name, phone1=tel, phone2=mob or eve)
-
-    def __reformat_date__(self, date):
-        """ convert 'date' from ddd-dd mmm yy HHMM' format to 'dd-mm-yyyy HH:MM'
-        @:param: date : 'ddd-mmm yy HHMM'
-        @:return  'dd-mm-yyyy HH:MM' or None if unable to convert"""
-        try:  # todo move these regexp into Config
-            # extract day
-            dd = self.__parse__(r'(?:\D{4})(\d{2})', date)
-            # convert month name to number
-            mm = self.__get_month_num__(self.__parse__(r'(?: )([JFMAMASOND]\w{2})', date))
-            # convert 2 digit year to 4 digit
-            yyyy = 2000 + int(self.__parse__(r'(?: )(\d{2})(?: )', date))
-            # extract time
-            hh = self.__parse__(r'(?:\d{2} )(\d{2})', date)
-            mn = self.__parse__(r'(?:\d{2} \d{2})(\d{2})', date)
-            # return concatenated date and time as string
-            return dd + "-" + mm + "-" + str(yyyy) + " " + hh + ":" + mn
-        # return None if errors occur
-        except (TypeError, ValueError):
-            return None
-
-    @staticmethod
-    def __set_notes__(notes_string):
-        """Return a list of notes with unwanted lines removed"""
-        # strip out any backslashes to deal with NA and N/A and split the note into a set of lines
-        notes = set(notes_string.replace("/", "").split("\n"))
-        # loop through each line of notes and add to deletion set those lines containing an unwanted note
-        unwanted_notes = {note for note in notes for unwanted in ConfigKA.UNWANTED_NOTES if unwanted in note}
-        # delete lines in common between both sets leaving only the lines not marked for deletion
-        # and convert to a list
-        notes = sorted(list(notes.difference(unwanted_notes)))
-        # remove all blank entries
         try:
-            while True:
-                notes.remove("")
-        except ValueError:
-            pass
-        return notes
+        # extract day
+            dd = self.__parse__(ConfigKA.REGEXP["time_day"], time)
+            # convert month name to number
+            mm = self.__get_month_num__(self.__parse__(ConfigKA.REGEXP["time_month"], time))
+            # convert 2 digit year to 4 digit
+            yyyy = str(2000 + int(self.__parse__(ConfigKA.REGEXP["time_year"], time)))
+            # extract time
+            hh = self.__parse__(ConfigKA.REGEXP["time_hour"], time)
+            mn = self.__parse__(ConfigKA.REGEXP["time_min"], time)
+            # concatenate and check for errors
+            time = dd + "-" + mm + "-" + yyyy + " " + hh + ":" + mn
+        except (TypeError,ValueError):
+            return None
+        else:
+            if len(time) == len("dd-mm-yyyy HH:MM"):
+                return time
+            else:
+                return None
 
     def __set_photos__(self, photo_string):
         """ return the integer number of photos required for the job"""
@@ -260,8 +270,22 @@ class HsParser(Parser):
     """ House Simple specific parser"""
 
     def __init__(self, job, job_page_data):
+        """job_page_data mirrors ConfigXx.JOB_PAGE_DATA and contains a complete description of a job scraped from a
+        client's website"""
         super().__init__(job, job_page_data, config=ConfigHS)
         self.__make_job__()
+
+    @staticmethod
+    def __set_id__(table):
+        """Parse unique job ID
+        @:param table DataFrame object
+        @:return string"""
+        try:
+            # extract the series corresponding to the ID key in the Config file
+            id_ = table.T[ConfigHS.JOB_PAGE_DATA["ID"]].values[0]  # return the first item in the series
+        except KeyError:
+            id_ = None
+        return id_
 
     def __make_job__(self):
         """ Map each data field from the job page to an attribute of self.job"""
@@ -278,19 +302,7 @@ class HsParser(Parser):
         self.job.photos = 20
         self.job.specific_reqs = None
         self.job.system_notes = None
-        self.job.status = classes.Job.ACTIVE
-
-    @staticmethod
-    def __set_id__(table):
-        """Parse unique job ID
-        @:param table DataFrame object
-        @:return string"""
-        try:
-            # extract the series corresponding to the ID key in the Config file
-            id_ = table.T[ConfigHS.JOB_PAGE_DATA["ID"]].values[0]  # return the first item in the series
-        except KeyError:
-            id_ = None
-        return id_
+        self.job.status = Classes.Job.ACTIVE
 
     def __set_vendor__(self, table):
         """Parse vendor name only. No phone numbers on House Simple job page.
@@ -300,7 +312,31 @@ class HsParser(Parser):
             vendor = table[ConfigHS.JOB_PAGE_DATA["Vendor"]].values[0]
         except KeyError:
             vendor = None
-        return classes.Vendor(name=vendor)
+        return Classes.Vendor(name=vendor)
+
+    def __reformat_date__(self, time):
+        """ convert 'time' from dd*mm*yyyy*@*HH:MM' format to 'dd-mm-yyyy HH:MM'
+        @:param: time : 'dd/mm/yyyy @ HH:MM'
+        @:return  'dd-mm-yyyy HH:MM' or None if unable to convert"""
+        try:
+            assert isinstance(time, str)
+        except AssertionError:
+            return None
+        # extract day
+        dd = self.__parse__(ConfigHS.REGEXP["time_day"], time)
+        # extract month
+        mm = self.__parse__(ConfigHS.REGEXP["time_month"], time)
+        # extract year
+        yyyy = self.__parse__(ConfigHS.REGEXP["time_year"], time)
+        # extract time
+        hh = self.__parse__(ConfigHS.REGEXP["time_hour"], time)
+        mn = self.__parse__(ConfigHS.REGEXP["time_min"], time)
+        # concatenate and check for errors
+        time = dd + "-" + mm + "-" + yyyy + " " + hh + ":" + mn
+        if len(time) == len("dd-mm-yyyy HH:MM"):
+            return time
+        else:
+            return None
 
     def __do_set_appointment__(self, table):
         """Read time and address from the table and convert into Parser format"""
@@ -319,30 +355,6 @@ class HsParser(Parser):
             time = None
 
         return self.__set_appointment__(address_string=address, time_string=time)
-
-    def __reformat_date__(self, time):
-        """ convert 'time' from dd*mm*yyyy*@*HH:MM' format to 'dd-mm-yyyy HH:MM'
-        @:param: time : 'dd/mm/yyyy @ HH:MM'
-        @:return  'dd-mm-yyyy HH:MM' or None if unable to convert"""
-        try:
-            assert isinstance(time,str)
-        except AssertionError:
-            return None
-        # extract day
-        dd = self.__parse__(ConfigHS.REGEXP["day"], time)
-        # extract month
-        mm = self.__parse__(ConfigHS.REGEXP["month"], time)
-        # extract year
-        yyyy = self.__parse__(ConfigHS.REGEXP["year"], time)
-        # extract time
-        hh = self.__parse__(ConfigHS.REGEXP["hour"], time)
-        mn = self.__parse__(ConfigHS.REGEXP["min"], time)
-        # concatenate and check for errors
-        time = dd + "-" + mm + "-" + yyyy + " " + hh + ":" + mn
-        if len(time) == len("dd-mm-yyyy HH:MM"):
-            return time
-        else:
-            return None
 
     @staticmethod
     def __set_property_type__(table):

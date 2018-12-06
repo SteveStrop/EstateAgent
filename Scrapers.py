@@ -4,7 +4,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 import re
 import ConfigKA, ConfigHS
-import classes
+import Classes
 import Parsers
 import pickle
 
@@ -79,7 +79,7 @@ class Scraper:
         # create a dict of page data matching Config specifications (see below)
         job_dict = self.get_page_fields()
         # create a new Job instance to store the scraped and formatted data
-        job = classes.Job()
+        job = Classes.Job()
         # map the job_dict data into a Job Class
         # todo make this parser a variable imported from Config
         self.parser(job, job_dict)  # sets all fields of job to those from the scraped page
