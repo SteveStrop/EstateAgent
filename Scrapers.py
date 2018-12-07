@@ -1,12 +1,14 @@
 import sys
+import pickle
+import re
 
 from selenium import webdriver
 from bs4 import BeautifulSoup
-import re
-import ConfigKA, ConfigHS
+
+import ConfigKA
+import ConfigHS
 import Classes
 import Parsers
-import pickle
 
 
 class Scraper:
@@ -118,15 +120,14 @@ class Scraper:
 
     # these two methods allow saving sample data for use in unit tests
     @staticmethod
-    def __save_dict_to_file__(obj, name):
+    def __save_obj_to_file__(obj, name):
         with open('G:/EstateAgent/Tests/obj/' + name + '.pkl', 'wb') as f:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-        input("dict saved. Abort?")
-
+        input("dict saved. Abort?")  # no need to scrape every page once valid data saved
         # insert this where needed
         # create sample data RUN ONCE!!
         # sys.setrecursionlimit(10000)
-        # self.__save_dict_to_file__(job_dict, "job_dict")
+        # self.__save_obj_to_file__(job_dict, "job_dict")
 
     @staticmethod
     def __load_obj__(name):

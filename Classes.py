@@ -29,35 +29,9 @@ class Address:
 class Appointment:
     def __init__(self, address=Address(None), dtime=None):
         """@param address: Address object
-        @:param dtime: date and time in format 'dd*mm*yyyy*HH*MM' """
+        @:param dtime: datetime object"""
         self.address = address
-        self.date = self.__validate_time__(dtime)
-
-    def __validate_time__(self, time):
-        """ check input is in the format
-        'dd*mm*yyyy*HH*MM' and convert it to a datetime object if it is. Note * is any (combination of)separator(s)
-        @:return a valid datetime object or None
-        """
-        try:  # convert time to list of the digits
-            time = [c for c in time if c.isdigit()]
-            dd = int(self.__multi_pop__(time, 2))
-            mm = int(self.__multi_pop__(time, 2))
-            yyyy = int(self.__multi_pop__(time, 4))
-            hh = int(self.__multi_pop__(time, 2))
-            mn = int(self.__multi_pop__(time, 2))
-            date = datetime.datetime(yyyy, mm, dd, hh, mn)
-            return date
-        except (TypeError, IndexError):
-            return None
-
-    @staticmethod
-    def __multi_pop__(l, n):
-        """ pop n items from beginning of list l
-        @:return string of n items"""
-        string = ""
-        for i in range(n):
-            string += l.pop(0)
-        return string
+        self.date = dtime
 
     def __str__(self):
         try:
@@ -107,15 +81,19 @@ class Client:
 
 
 class Vendor:
-    def __init__(self, name=None, phone1=None, phone2=None):  # todo use Client validate phone method here possibly by
+    def __init__(self, name=None, phone1=None, phone2=None,phone3=None):  # todo use Client validate phone method here
+        # possibly by
         # todo making vendor a subclass of client
         self.name = name
         self.phone1 = phone1
         self.phone2 = phone2
+        self.phone3=phone3
 
     def __str__(self):
-        return f"{self.name if self.name else 'N/A'} ({self.phone1 if self.phone1 else 'N/A'}) " \
-            f"({self.phone2 if self.phone2 else 'N/A'})"
+        return f"{self.name if self.name else 'N/A'}" \
+            f"({self.phone1 if self.phone1 else 'N/A'}) " \
+            f"({self.phone2 if self.phone2 else 'N/A'})" \
+            f"({self.phone3 if self.phone3 else 'N/A'})"
 
 
 class Agent(Client):

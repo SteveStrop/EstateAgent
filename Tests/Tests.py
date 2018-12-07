@@ -5,20 +5,13 @@ import datetime
 from Parsers import *
 
 # import test data
-with open('obj/' + "job_dict" + '.pkl', 'rb') as f:
-    JOB_DICT = pickle.load(f)
+with open('obj/' + "job_dict_hs" + '.pkl', 'rb') as f:
+    JOB_DICT_HS = pickle.load(f)
+    # print(JOB_DICT_HS)
 
-with open('obj/' + "demo_job" + '.pkl', 'rb') as f:
-    DEMO_JOB = pickle.load(f)
-
-with open('obj/' + "table_ss" + '.pkl', 'rb') as f:
-    TABLE_SS = pickle.load(f)
-
-with open('obj/' + "table_sv" + '.pkl', 'rb') as f:
-    TABLE_SV = pickle.load(f)
-
-with open('obj/' + "notes_string" + '.pkl', 'rb') as f:
-    NOTES_STRING = pickle.load(f)
+with open('obj/' + "job_dict_ka" + '.pkl', 'rb') as f:
+    JOB_DICT_KA = pickle.load(f)
+    # print(JOB_DICT_KA)
 
 
 class TestAddress(unittest.TestCase):
@@ -32,17 +25,7 @@ class TestAddress(unittest.TestCase):
 
 class TestAppointment(unittest.TestCase):
     def test__validate_time__(self):
-        test_app = Appointment()
-        dates = [["050220180810", ("05-02-2018", "08:10")],
-                 ["05/02 201808:10", ("05-02-2018", "08:10")],
-                 ["67", (None, None)],
-                 [" ", (None, None)],
-                 ["", (None, None)]]
-        for date in dates:
-            if date[1][0]:
-                self.assertIsInstance(test_app.__validate_time__(date[0]), datetime.datetime)
-            else:
-                self.assertEqual(test_app.__validate_time__(date[0]), None)
+        self.assertEqual("TBA", Appointment(None, None).__str__())
 
 
 class TestClient(unittest.TestCase):
@@ -69,79 +52,56 @@ class TestClient(unittest.TestCase):
                 ('01908-501-401', '01908 501 401'),
                 ('0207 760 7600', '02077 607 600')
                 ]
-         # todo this is NOT correct for London (similar issue for other cities as well!!)
+        # todo this is NOT correct for London (similar issue for other cities as well!!)
         for tel in tels:
             self.assertEqual(tel[1], test_client.__validate_tel__(tel[0]))
 
 
 class TestKaParser(unittest.TestCase):
-    test_parser = KaParser(Job(), {**ConfigKA.JOB_PAGE_DATA, **ConfigKA.JOB_PAGE_TABLES})
+    test_parser = KaParser(Job(), JOB_DICT_KA)
+    def test_set_vendor(self):
+        v = TestKaParser.test_parser.set_vendor()
+        self.assertEqual("Mrs Sue Blogs", v.name)
+        self.assertEqual("07891123211", v.phone1)
+        self.assertEqual(None, v.phone2)
+        self.assertEqual("07991332456", v.phone3)
 
-    def test__set_vendor__(self):
-        v = TestKaParser.test_parser.__set_vendor__(
-                "Other Vendor:Mr Sue Blogs DAY:07895456410 MOB:07121456789 EVE:N/A Email:N/A")
-        self.assertEqual(v.name, "Mr Sue Blogs")
-        self.assertEqual(v.phone1, "07895456410")
-        self.assertEqual(v.phone2, "07121456789")
-        v = TestKaParser.test_parser.__set_vendor__(
-                "Other Vendor:Mr Sue Blogs DAY:07895456410 MOB:N/A EVE:07121456789 Email:N/A")
-        self.assertEqual(v.name, "Mr Sue Blogs")
-        self.assertEqual(v.phone1, "07895456410")
-        self.assertEqual(v.phone2, "07121456789")
+    def test_set_agent(self):
+        a = TestKaParser.test_parser.set_agent()
+        self.assertEqual("Connells - Stony Stratford", a.name)
+        self.assertEqual("01908 222 343", a.phone1)
+        self.assertEqual("01908 111 999", a.phone2)
 
-    def test__set_agent__(self):
-        a = TestKaParser.test_parser.__set_agent__("Brown of Connells MOB:01908 563 993 TEL:01908 563 993 EVE:N/A")
-        self.assertEqual(a.phone1, "01908 563 993")
-        self.assertEqual(a.phone2, "01908 563 993")
-
-    def test__set_floorplan__(self):
-        f = TestKaParser.test_parser.__set_floorplan__(" Yes")
+    def tests_et_floorplan(self):
+        f = TestKaParser.test_parser.set_floorplan()
         self.assertEqual(True, f)
-        f = TestKaParser.test_parser.__set_floorplan__("Yes")
-        self.assertEqual(True, f)
-        f = TestKaParser.test_parser.__set_floorplan__(" No")
-        self.assertEqual(False, f)
 
-    def test__set_photos__(self):
-        p = TestKaParser.test_parser.__set_photos__("	Yes - 20 photos (0) Allocated")
-        self.assertEqual(20, p)
-        p = TestKaParser.test_parser.__set_photos__("	Yes - 9 photos (0) Allocated")
-        self.assertEqual(9, p)
-        p = TestKaParser.test_parser.__set_photos__("	Yes - 09 photos (0) Allocated")
-        self.assertEqual(9, p)
+    def test_set_photos(self):
+        p = TestKaParser.test_parser.set_photos()
+        self.assertEqual(p, 20)
 
-    def test__set__notes__(self):
+    def test_set_notes(self):
+        n = TestKaParser.test_parser.set_notes()
+        print(n)
+        self.assertIn("Agency Preferences: Nice photos only please", n[0])
+        self.assertIn("General Notes: Take every angle.", n[1])
+        self.assertIn("Please get shots of the approach", n[2])
 
-        n = TestKaParser.test_parser.__set_notes__(NOTES_STRING)
-        self.assertIn("prefs", n[0])
-        self.assertIn("Beautiful Cottage", n[1])
-
-    def test__set_streetscape__(self):
-
-        s = TestKaParser.test_parser.__set_specific_reqs__(TABLE_SS)
+    def test_set_streetscape(self):
+        s = TestKaParser.test_parser.__set_specific_reqs__()
         self.assertIn("StreetScape", s.keys())
 
-    def test__set_system_notes__(self):
-        s = TestKaParser.test_parser.__set_system_notes__(TABLE_SV)
+    def test_set_system_notes(self):
+        s = TestKaParser.test_parser.__set_system_notes__()
         self.assertIn("SC", s[0][1])
         self.assertIn("Changed  ", s[0][2])
 
-    def test__set_appointment__(self):
-        test_strings = [
-                ("30, Lower Weald Calverton, Milton Keynes", "MK19 6EQ", "03 12 2018 14:30")
-        ]
-        for street_string, postcode_string, time_string in test_strings:
-            address_string = street_string + postcode_string
-            a = TestKaParser.test_parser.__set_appointment__(time_string, address_string)
-            self.assertEqual(street_string, a.address.street)
-            self.assertEqual(datetime.datetime(2018, 12, 3, 14, 30), a.date)
+    def test_set_appointment(self):
+        a = TestKaParser.test_parser.set_appointment()
+        self.assertEqual("29, Test Street Testville, Milton Keynes", a.address.street)
+        self.assertEqual("MK4 4FY", a.address.postcode)
+        self.assertEqual("Fri 08 Feb @ 00:00", a.__str__())
 
 
 class TestHsParser(unittest.TestCase):
-    test_parser = HsParser(Job(), JOB_DICT)
-
-    def test__reformat_date__(self):
-        test_string = [("25/12/2018 @ 12:00", "25-12-2018 12:00")]  # ,("25/12/18 @ 12:00",None),(None,None)]
-        for s in test_string:
-            r = TestHsParser.test_parser.__reformat_date__(s[0])
-            self.assertEqual(s[1], r)
+    test_parser = HsParser(Job(), JOB_DICT_HS)
