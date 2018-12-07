@@ -6,74 +6,139 @@ import Classes
 
 
 class Parser:
-    """ Generic parser.
+    """
+    Generic parser.
     Client specific parser must supply name of appropriate config file.
-    Parser maps 'ConfigXx.JOB_PAGE_DATA' to Job class attributes"""
+    Parser maps 'ConfigXx.JOB_PAGE_DATA(and/or JOB_PAGE_TABLES)' to Job class attributes
+    """
 
-    def __init__(self, job, job_page_data, config=None):
-        """job_page_data mirrors ConfigXx.JOB_PAGE_DATA and contains a complete description of a job scraped from a
-        client's website"""
+    def __init__(self, job, scraper_data, config=None):
+        """
+        @:param job          : Job object where parsed data will be stored
+        @:param scraper_data : dict mirroring ConfigXx.JOB_PAGE_DATA.
+                               It contains a complete description of a job scraped from a client's website
+        @:param config       : Master configuration file detailing how the parser should read the scraped data.
+                               Edit this if the client website structure changes.
+        """
         self.client = config.CLIENT
-        self.regexp = config.REGEXP
-        self.job_page_data = job_page_data
-        self.time = None  # not added to new class
-        self.address = None  # not added to new class
+        self.regexp = config.REGEXP  # all the regexp needed to parse the client site in one place
+        self.scraper_data = scraper_data
+        self.time = None
+        self.address = None
         self.job = job
 
-    def make_job(self):
-        """ Map each data field from the job page to an attribute of self.job"""
+    def map_job(self):
+        """
+        Map each data field from the job page to the corresponding attribute of self.job
+        @:return None
+        """
         return NotImplementedError
 
     def __set_id__(self):
-        """Parse unique ID for job"""
+        """
+        Parse unique ID for job
+        @:return string
+        """
         return NotImplementedError
 
     def __set_agent__(self):
+        """
+        Parse agent name and branch.
+        @:return string
+        """
         return NotImplementedError
 
     def __set_vendor__(self):
-        """Parse vendor_string for name and first two telephone numbers if present.
-        @:return Vendor object"""
+        """
+        Parse vendor name and three telephone numbers if present.
+        @:return Vendor object
+        """
         return NotImplementedError
 
     def __set_property_type__(self):
+        """
+        Parse property type.
+        @:return string
+        """
         return NotImplementedError
 
     def __set_beds__(self):
+        """
+        Parse number of bedrooms.
+        @:return string
+        """
         return NotImplementedError
 
     def __set_floorplan__(self):
-        """ Return boolean True if floor plan needed else return False"""
+        """
+        Parse floorplan requirements.
+        @:return boolean True if floorplan needed else False
+        """
         return NotImplementedError
 
     def __set_photos__(self):
-        """ return the integer number of photos required for the job"""
+        """
+        Parse photos quantity required.
+        @:return int
+        """
         return NotImplementedError
 
-    def __set_appointment__(self):
+    def __set_notes__(self):
         """
+        Parse and summarise notes.
+        @:return list
+        """
+        return NotImplementedError
+
+    def set_appointment(self):
+        """
+        Parse date and time using set_time and set_date methods.
         @:return: Appointment object:
          """
-        self.time = self.__set_time__()
-        self.address = self.__set_address__()
         appt = Classes.Appointment(self.address, self.time)
         return appt
 
-    def __set_notes__(self):
-        """Return a list of notes """
-        return NotImplementedError
-
-    def __set_time__(self):
-        """return a valid datetime object or None"""
-        return NotImplementedError
-
-    def __set_address__(self):
-        """return a valid Address object or None"""
-        return NotImplementedError
+    @staticmethod
+    def set_time(time, time_format):
+        """
+        Helper method for set_appointment.
+        @:param time        : string
+        @:param time_format : string defines format of time string using Datetime conventions (%m %D %y etc)
+        @:return Datetime object or None
+        """
+        try:
+            return dt.datetime.strptime(time, time_format)
+        except (TypeError, ValueError):
+            return None
 
     @staticmethod
-    def __parse__(regexp, string):
-        """@:return substring of string matching 'regexp' or single space."""
+    def set_address(address):
+        """
+        Helper method for set_appointment.
+        Parse full UK address and partition into street address and postcode parts.
+        @:param address : string
+        @:return : Address object
+        """
+        try:
+            # get valid postcode  ([0] is first occurrence)
+            postcode = (re.findall(Classes.Address.postcode_regexp, address))[0]
+        except IndexError:
+            # no match
+            postcode = ""
+        # strip out postcode and any trailing  spaces
+        street = address.replace(postcode, "").strip()
+        while street[-1] == ",":
+            street = street.strip(",")  # poorly entered addresses can have extra commas
+        # make Address object
+        return Classes.Address(street, postcode)
+
+    @staticmethod
+    def parse(regexp, string):
+        """
+        Find regexp in string.
+        This is the main method for extracting cleaned data from a client's web page.
+        @:return string or None
+        """
         try:
             return re.search(regexp, string).group(1)
         except (IndexError, AttributeError):
@@ -81,21 +146,29 @@ class Parser:
 
 
 class KaParser(Parser):
-    """ Key Agent specific parser."""
+    """
+    Key Agent parser.
+    Most Key agent data is stored in HTML tags with ids. Some is in tables.
+    ConfigKa keeps track of these in JOB_PAGE_DATA
+    Some data is stored in tables tracked in JOB_PAGE_TABLES.
+    Job attributes are parsed by cross referencing this table.
+    """
 
-    def __init__(self, job, job_page_data):
-        """job_page_data mirrors ConfigXx.JOB_PAGE_DATA and contains a complete description of a job scraped from a
-        client's website"""
-        super().__init__(job, job_page_data, config=ConfigKA)
+    def __init__(self, job, scraper_data):
+        super().__init__(job, scraper_data, config=ConfigKA)
 
-    # todo make these all GET methods then use set in the super class!!! probably self.job.xxx=self.xxx in the super
-    def make_job(self):
-        """ Map each data field from the job page to an attribute of self.job"""
+    def map_job(self):
+        """
+        Map each data field from the job page to an attribute of self.job
+        @:return None
+        """
         self.job.client = self.client
         self.job.id = self.__set_id__()
         self.job.agent = self.__set_agent__()
         self.job.vendor = self.__set_vendor__()
-        self.job.appointment = self.__set_appointment__()
+        self.time = self.__set_time__()
+        self.address = self.__set_address__()
+        self.job.appointment = self.set_appointment()
         self.job.property_type = self.__set_property_type__()
         self.job.beds = self.__set_beds__()
         self.job.floorplan = self.__set_floorplan__()
@@ -106,58 +179,85 @@ class KaParser(Parser):
         self.job.status = Classes.Job.ACTIVE
 
     def __set_id__(self):
-        """Parse unique ID for job"""
-        id_ = self.job_page_data["JOB_DATA_ID"]
-        return id_
+        """
+        Parse unique ID for job
+        @:return string
+        """
+        return self.scraper_data["JOB_DATA_ID"]
 
     def __set_agent__(self):
+        """
+        Parse agent name and branch.
+        @:return string
+        """
         # parse agent name from notes as this contains branch name info
-        notes = self.job_page_data["JOB_DATA_NOTES"]
-        agent_name = self.__parse__(self.regexp["agent"], notes).strip()
-        agent = self.job_page_data["JOB_DATA_AGENT"]  # for phone numbers
+        notes = self.scraper_data["JOB_DATA_NOTES"]
+        agent_name = self.parse(self.regexp["agent"], notes).strip()
 
-        # parse phone numbers from agent id
-        tel = self.__parse__(self.regexp["phone1"], agent).strip()
-        mob = self.__parse__(self.regexp["agent_mob"], agent).strip()
+        # parse agent for phone numbers
+        # todo add third phone number (EVE) NOTE nedd to add it to Agent class as well
+        agent = self.scraper_data["JOB_DATA_AGENT"]
+        tel = self.parse(self.regexp["phone1"], agent).strip()
+        mob = self.parse(self.regexp["agent_mob"], agent).strip()
         return Classes.Agent(name=agent_name, phone1=tel, phone2=mob)
 
     def __set_vendor__(self):
-        """Parse vendor for name and first three telephone numbers if present.
-        @:return Vendor object"""
-        vendor = self.job_page_data["JOB_DATA_VENDOR"]
-        vendor_name = self.__parse__(self.regexp["vendor"], vendor)
-        tel = self.__parse__(self.regexp["day"], vendor)
-        mob = self.__parse__(self.regexp["vendor_mob"], vendor)
-        eve = self.__parse__(self.regexp["eve"], vendor)
+        """
+        Parse vendor name and three telephone numbers if present.
+        @:return Vendor object
+        """
+        vendor = self.scraper_data["JOB_DATA_VENDOR"]
+        vendor_name = self.parse(self.regexp["vendor"], vendor)
+        tel = self.parse(self.regexp["day"], vendor)
+        mob = self.parse(self.regexp["vendor_mob"], vendor)
+        eve = self.parse(self.regexp["eve"], vendor)
         return Classes.Vendor(name=vendor_name, phone1=tel, phone2=mob, phone3=eve)
 
     def __set_property_type__(self):
-        return self.job_page_data["JOB_DATA_PROPERTY_TYPE"]
+        """
+        Parse property type.
+        @:return string
+        """
+        return self.scraper_data["JOB_DATA_PROPERTY_TYPE"]
 
     def __set_beds__(self):
-        return self.job_page_data["JOB_DATA_BEDS"]
+        """
+        Parse number of bedrooms.
+        @:return string
+        """
+        return self.scraper_data["JOB_DATA_BEDS"]
 
     def __set_floorplan__(self):
-        return self.job_page_data["JOB_DATA_FLOORPLAN"].strip().upper().startswith("YES")
+        """
+        Parse floorplan requirements.
+        @:return boolean True if floorplan needed else False
+        """
+        return self.scraper_data["JOB_DATA_FLOORPLAN"].strip().upper().startswith("YES")
 
     def __set_photos__(self):
-        """ return the integer number of photos required for the job"""
-        photos = self.job_page_data["JOB_DATA_PHOTOS"]
+        """
+        Parse photos quantity required.
+        @:return int
+        """
+        photos = self.scraper_data["JOB_DATA_PHOTOS"]
         try:
-            return int(self.__parse__(self.regexp["photo_count"], photos).strip())
+            return int(self.parse(self.regexp["photo_count"], photos).strip())
         except ValueError:
             return 0
 
     def __set_notes__(self):
-        """Return a list of notes with unwanted lines removed"""
-        notes = self.job_page_data["JOB_DATA_NOTES"]  # strip out any backslashes to deal with NA and N/A and split the
+        """
+        Parse and summarise notes.
+        @:return list
+        """
+        notes = self.scraper_data["JOB_DATA_NOTES"]  # strip out any backslashes to deal with NA and N/A and split the
         # note into a set of lines
         notes = set(notes.replace("/", "").split("\n"))
-        # loop through each line of notes and add to deletion set those lines containing an unwanted note
+        # loop through each line of notes
+        # mark unwanted lines for deletion by adding to a new set
         unwanted_notes = {note for note in notes for unwanted in ConfigKA.UNWANTED_NOTES if unwanted in note}
-        # delete lines in common between both sets leaving only the lines not marked for deletion
-        # and convert to a list
-        notes = sorted(list(notes.difference(unwanted_notes)))
+        # delete them
+        notes = sorted(list(notes.difference(unwanted_notes)))  # set.difference() is the lines only in notes.
         # remove all blank entries
         try:
             while True:
@@ -167,110 +267,90 @@ class KaParser(Parser):
         return notes
 
     def __set_address__(self):
-        """return a valid Address object"""
-        address = self.job_page_data["JOB_DATA_APPOINTMENT_ADDRESS"]
-        try:
-            # get valid postcode  ([0] is first occurrence)
-            postcode = (re.findall(Classes.Address.postcode_regexp, address))[0].strip()
-        except IndexError:
-            # no match
-            postcode = ""
-        # strip out postcode and any 'N/A'. Remove trailing  spaces and commas to make street address:
-        street = address.replace(postcode, "").replace("N/A", "").strip().strip(",")
-        # make Address object
-        return Classes.Address(street, postcode)
+        """
+        Extract address field from scraper_data and send it to base Parser.set_address().
+        @:return Address object
+        """
+        address = self.scraper_data["JOB_DATA_APPOINTMENT_ADDRESS"]
+        return self.set_address(address)
 
     def __set_time__(self):
-        """return a valid datetime object"""
-        time = self.job_page_data["JOB_DATA_APPOINTMENT"]
-        try:
-            return dt.datetime.strptime(time, "%a-%d %b %y %H%M")
-        except (TypeError, ValueError):
-            return None
+        """
+        Extract date & time field from scraper_data.
+        Define Datetime format for that data and send these to base Parser.set_time().
+        @:return Datetime object
+        """
+        time = self.scraper_data["JOB_DATA_APPOINTMENT"]
+        time_format = "%a-%d %b %y %H%M"
+        return self.set_time(time, time_format)
 
     # Client specific methods
-    @staticmethod
-    def __get_month_num__(date):
-        """ convert three letter month name into month number ( jan=1).
-        @:param date : first 3 letters of month
-        @:return month number int or None if unable to convert"""
-        month_nums = {
-                "jan": "01",
-                "feb": "02",
-                "mar": "03",
-                "apr": "04",
-                "may": "05",
-                "jun": "06",
-                "jul": "07",
-                "aug": "08",
-                "sep": "09",
-                "oct": "10",
-                "nov": "11",
-                "dec": "12"
-        }
-        try:
-            return month_nums[date.lower()]
-        except KeyError:
-            return None
 
     def __set_specific_reqs__(self):
-        """ Extract specific_reqs from beautiful soup table.
-       @:return dict of requirement : quantity"""
-        #
+        """
+        Parse the specific requirements table.
+        Currently this is only used for streetscape but it could be expanded to cover any specific photo requirements.
+       @:return dict {requirement : quantity}
+       """
         # make pandas dataframe from table
-        table = self.job_page_data["JOB_DATA_SPECIFIC_REQS_TABLE"]
+        table = self.scraper_data["JOB_DATA_SPECIFIC_REQS_TABLE"]
         try:
             df = pd.read_html(str(table), header=0)[0]  # pandas dataframe
         except ValueError:
-            return NotImplementedError
-        else:
-            #
-            # read the table into a dict and return it
-            return {row['Specific Requirement']: row['Files required'] for _, row in df.iterrows()}
+            return None
+        # read the table into a dict and return it
+        return {row['Specific Requirement']: row['Files required'] for _, row in df.iterrows()}
 
     def __set_system_notes__(self):
-        """ Extract system notes from 'table' a beautifully souped Site Visit table.
-        Shorten commonly found words in the table using Config.JOB_PAGE_SITE_VISIT_ABBRS
-       @:return list of system requirements : [Date, Author, Note]"""
-        table = self.job_page_data["JOB_DATA_HISTORY_TABLE"]
+        """
+        Parse job history.
+        Abbreviate jargon using Config.JOB_PAGE_SITE_VISIT_ABBRS
+       @:return list [Date, Author, Note]
+       """
 
-        def trim(string):
-            """Shorten commonly found words in the table using Config.JOB_PAGE_SITE_VISIT_ABBRS"""
+        def abbreviate(string):
             for k, v in ConfigKA.JOB_PAGE_SITE_VISIT_ABBRS.items():
                 string = string.replace(k, v)
             return string
 
-        #
         # make pandas dataframe from table
+        table = self.scraper_data["JOB_DATA_HISTORY_TABLE"]
         try:
             df = pd.read_html(str(table), header=0)[0]  # pandas dataframe
         except ValueError:
-            return NotImplementedError
-        else:
-            #
-            # read the table into a list and clean it up by shortening common words
-            return [[trim(row['Date Created']), trim(row['Created By']), trim(row['Note'])] for _, row in df.iterrows()]
+            return None
+        # read the table into a list and abbreviate
+        return [[abbreviate(row['Date Created']), abbreviate(row['Created By']), abbreviate(row['Note'])] for _, row in
+                df.iterrows()]
 
 
 class HsParser(Parser):
-    """ House Simple specific parser"""
+    """
+    House Simple parser.
+    All House simple fields are elements of one of two tables: Home Visit and Owner.
+    These two tables are concatenated into the pandas dataframe object self.table.
+    Job attributes are parsed from this table.
+    """
 
-    def __init__(self, job, job_page_data):
-        """job_page_data mirrors ConfigXx.JOB_PAGE_DATA and contains a complete description of a job scraped from a
-        client's website"""
-        super().__init__(job, job_page_data, config=ConfigHS)
-        self.table = None # ConfigHs.JOB_PAGE_DATA contains one table with all the page data. We store it here
+    def __init__(self, job, scraper_data):
+        super().__init__(job, scraper_data, config=ConfigHS)
+        self.table = None  # maps to ConfigHS.JOB_PAGE_DATA
 
-    def make_job(self):
-        """ Map each data field from the job page to an attribute of self.job"""
+    def map_job(self):
+        """
+        Map each data field from the job page to an attribute of self.job
+        @:return None
+        """
 
         # get the data and read it into a pandas table
-        df = pd.read_html(str(self.job_page_data["JOB_DATA_TABLE"]), index_col=0)
+        df = pd.read_html(str(self.scraper_data["JOB_DATA_TABLE"]), index_col=0)
         self.table = pd.concat([pd.DataFrame(df[i]) for i in range(len(df))]).T  # Transpose the table
         self.job.client = self.client
         self.job.id = self.__set_id__()
         self.job.vendor = self.__set_vendor__()
-        self.job.appointment = self.__set_appointment__()
+        self.time = self.__set_time__()
+        self.address = self.__set_address__()
+        self.job.appointment = self.set_appointment()
         self.job.property_type = self.__set_property_type__()
         self.job.beds = self.__set_beds__()
         self.job.floorplan = True
@@ -278,9 +358,10 @@ class HsParser(Parser):
         self.job.status = Classes.Job.ACTIVE
 
     def __set_id__(self):
-        """Parse unique job ID
-        @:param table DataFrame object
-        @:return string"""
+        """
+        Parse unique job ID
+        @:return string
+        """
         try:
             # extract the series corresponding to the ID key in the Config file
             id_ = self.table[ConfigHS.JOB_PAGE_DATA["ID"]].values[0]  # return the first item in the series
@@ -289,9 +370,11 @@ class HsParser(Parser):
         return id_
 
     def __set_vendor__(self):
-        """Parse vendor name only. No phone numbers on House Simple job page.
-        @:param table DataFrame object
-        @:return Vendor object"""
+        """
+        Parse vendor name only.
+        No vendor phone numbers on House Simple job page.
+        @:return Vendor object
+        """
         try:
             vendor = self.table[ConfigHS.JOB_PAGE_DATA["Vendor"]].values[0]
         except KeyError:
@@ -299,40 +382,43 @@ class HsParser(Parser):
         return Classes.Vendor(name=vendor)
 
     def __set_property_type__(self):
+        """
+        Parse property type.
+        @:return string
+        """
         try:
-            # extract the series corresponding to the ID key in the Config file
-            property_type = self.table[ConfigHS.JOB_PAGE_DATA["Property"]].values[0]  # return the first item in the
-            # series
+            # extract the series corresponding to the Property key in the Config file
+            p_type = self.table[ConfigHS.JOB_PAGE_DATA["Property"]].values[0]  # return the first item in the series
         except KeyError:
-            property_type = None
-        return property_type
+            p_type = None
+        return p_type
 
     def __set_beds__(self):
+        """
+        Parse number of bedrooms.
+        @:return string
+        """
         try:
-            # extract the series corresponding to the ID key in the Config file
+            # extract the series corresponding to the Beds key in the Config file
             beds = self.table[ConfigHS.JOB_PAGE_DATA["Beds"]].values[0]  # return the first item in the series
         except KeyError:
             beds = None
         return beds
 
     def __set_address__(self):
-        """@:return a valid Address object"""
+        """
+        Extract address field from scraper_data and send it to base Parser.set_address().
+        @:return Address object
+        """
         address = self.table[ConfigHS.JOB_PAGE_DATA["Address"]].values[0].strip()
-        try:
-            # get valid postcode  ([0] is first occurrence)
-            postcode = (re.findall(Classes.Address.postcode_regexp, address))[0]
-        except IndexError:
-            # no match
-            postcode = ""
-        # strip out postcode and any trailing  spaces
-        street = address.replace(postcode, "").strip()
-        # make Address object
-        return Classes.Address(street, postcode)
+        return self.set_address(address)
 
     def __set_time__(self):
-        """return a valid datetime object"""
+        """
+        Extract date & time field from scraper_data.
+        Define Datetime format for that data and send these to base Parser.set_time().
+        @:return Datetime object
+        """
         time = self.table[ConfigHS.JOB_PAGE_DATA["Appointment"]].values[0]
-        try:
-            return dt.datetime.strptime(time, "%d/%m/%Y @ %H:%M")
-        except (TypeError, ValueError):
-            return None
+        time_format = "%d/%m/%Y @ %H:%M"
+        return self.set_time(time, time_format)

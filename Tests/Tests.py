@@ -58,12 +58,11 @@ class TestClient(unittest.TestCase):
 
 class TestKaParser(unittest.TestCase):
     test_parser = KaParser(Job(), JOB_DICT_KA)
-    def test_set_vendor(self):
-        v = TestKaParser.test_parser.__set_vendor__()
-        self.assertEqual("Mrs Sue Blogs", v.name)
-        self.assertEqual("07891123211", v.phone1)
-        self.assertEqual(None, v.phone2)
-        self.assertEqual("07991332456", v.phone3)
+    test_parser.map_job()
+
+    def test_set_id(self):
+        i = TestKaParser.test_parser.__set_id__()
+        self.assertEqual("1000623765", i)
 
     def test_set_agent(self):
         a = TestKaParser.test_parser.__set_agent__()
@@ -71,7 +70,22 @@ class TestKaParser(unittest.TestCase):
         self.assertEqual("01908 222 343", a.phone1)
         self.assertEqual("01908 111 999", a.phone2)
 
-    def tests_et_floorplan(self):
+    def test_set_vendor(self):
+        v = TestKaParser.test_parser.__set_vendor__()
+        self.assertEqual("Mrs Sue Blogs", v.name)
+        self.assertEqual("07891123211", v.phone1)
+        self.assertEqual(None, v.phone2)
+        self.assertEqual("07991332456", v.phone3)
+
+    def test_set_property_type(self):
+        p = TestKaParser.test_parser.__set_property_type__()
+        self.assertEqual("House", p)
+
+    def test_set_beds(self):
+        b = TestKaParser.test_parser.__set_beds__()
+        self.assertEqual("3", b)
+
+    def test_set_floorplan(self):
         f = TestKaParser.test_parser.__set_floorplan__()
         self.assertEqual(True, f)
 
@@ -85,7 +99,7 @@ class TestKaParser(unittest.TestCase):
         self.assertIn("General Notes: Take every angle.", n[1])
         self.assertIn("Please get shots of the approach", n[2])
 
-    def test_set_streetscape(self):
+    def test_set_specific_reqs(self):
         s = TestKaParser.test_parser.__set_specific_reqs__()
         self.assertIn("StreetScape", s.keys())
 
@@ -95,7 +109,7 @@ class TestKaParser(unittest.TestCase):
         self.assertIn("Changed  ", s[0][2])
 
     def test_set_appointment(self):
-        a= TestKaParser.test_parser.__set_appointment__()
+        a = TestKaParser.test_parser.set_appointment()
         self.assertEqual("29, Test Street Testville, Milton Keynes", a.address.street)
         self.assertEqual("MK4 4FY", a.address.postcode)
         self.assertEqual("Fri 08 Feb @ 00:00", a.__str__())
@@ -103,3 +117,23 @@ class TestKaParser(unittest.TestCase):
 
 class TestHsParser(unittest.TestCase):
     test_parser = HsParser(Job(), JOB_DICT_HS)
+    test_parser.map_job()  # run this first to make the pandas dataframe table used to store all scraped data
+
+    def test_set_id(self):
+        i = TestHsParser.test_parser.__set_id__()
+        self.assertEqual("HSS103120", i)
+
+    def test_set_vendor(self):
+        v = TestHsParser.test_parser.__set_vendor__()
+        self.assertEqual("joe blogs", v.name)
+        self.assertEqual(None, v.phone1)
+
+    def test_set_property_type(self):
+        p = TestHsParser.test_parser.__set_property_type__()
+        self.assertEqual("Semi-detached House", p)
+
+    def test_set_appointment(self):
+        a = TestHsParser.test_parser.set_appointment()
+        self.assertEqual("37 Testy Road, Testtown, Bedfordshire", a.address.street)
+        self.assertEqual("MK41 5DA", a.address.postcode)
+        self.assertEqual("Sat 08 Dec @ 15:00", a.__str__())

@@ -11,9 +11,11 @@ class Address:
 
     @staticmethod
     def __validate_postcode__(postcode):
-        """ Convert input to upper case then check if it is a valid mainland UK postcode
+        """
+        Convert input to upper case then check if it is a valid mainland UK postcode
         @:param postcode string to test
-        :return validated uppercase postcode or None"""
+        @:return validated uppercase postcode or None
+        """
         try:
             postcode = postcode.upper()
             return re.fullmatch(Address.postcode_regexp, postcode)[0]
@@ -23,17 +25,27 @@ class Address:
             return None
 
     def __str__(self):
+        """
+        String representation of Address object.
+        :return: string
+        """
         return f"{self.street if self.street else ''}, {self.postcode if self.postcode else ''}"
 
 
 class Appointment:
     def __init__(self, address=Address(None), dtime=None):
-        """@param address: Address object
-        @:param dtime: datetime object"""
+        """
+        @:param address: Address object
+        @:param dtime: Datetime object"""
+
         self.address = address
         self.date = dtime
 
     def __str__(self):
+        """
+        String representation of Appointment object.
+        :return: string formatted date and time or 'TBA' if no valid date given
+        """
         try:
             return self.date.strftime("%a %d %b @ %H:%M")  # Day dd Mmm @ hh:mm
         except (TypeError, AttributeError):
@@ -41,7 +53,7 @@ class Appointment:
 
 
 class Client:
-    """ contains all client details:
+    """
     @:param name: string
     @:param primary_contact: string
     @:param primary_tel: string
@@ -49,7 +61,8 @@ class Client:
     @:param secondary_tel: string
     @:param notes string
     """
-    VALID_TEL= r'^\(?\d{4,5}\)?[ -]?\d{3}[ -]?\d{3,4}$'
+    VALID_TEL = r'^\(?\d{4,5}\)?[ -]?\d{3}[ -]?\d{3,4}$'
+
     def __init__(self, name=None, phone1=None, secondary_contact=None, phone2=None, notes=None):
         self.name = name
         self.phone1 = self.__validate_tel__(phone1)
@@ -59,9 +72,11 @@ class Client:
 
     @staticmethod
     def __validate_tel__(tel):
-        """ Check phone1 is valid uk phone number
-        @:return number formatted as ##### ### ###"""  # todo consider adding uk city formatting support
-        try:  # strip non digits from phone1
+        """
+        Check phone is valid uk phone number
+        @:return string formatted as ##### ### ###"""  # todo consider adding uk city formatting support
+        # strip non digits
+        try:
             tel = [n for n in tel if n.isdigit()]
             tel = "".join(tel)
         except TypeError:
@@ -81,13 +96,12 @@ class Client:
 
 
 class Vendor:
-    def __init__(self, name=None, phone1=None, phone2=None,phone3=None):  # todo use Client validate phone method here
+    def __init__(self, name=None, phone1=None, phone2=None, phone3=None):
         # possibly by
-        # todo making vendor a subclass of client
         self.name = name
         self.phone1 = phone1
         self.phone2 = phone2
-        self.phone3=phone3
+        self.phone3 = phone3
 
     def __str__(self):
         return f"{self.name if self.name else 'N/A'}" \
@@ -104,7 +118,7 @@ class Agent(Client):
         self.address = Address(address=address, postcode=postcode)
 
 
-class Job:  # todo make KAJob, HSJob, TMJob etc sub classes or keep this one generic (opt 2 better!)
+class Job:
     """A generic class to hold all data that completely describes a job from any client.
     Note not all clients require all attributes to contain valid data"""
     ACTIVE = 1
