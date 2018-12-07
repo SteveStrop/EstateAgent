@@ -59,29 +59,28 @@ class TestClient(unittest.TestCase):
 class TestKaParser(unittest.TestCase):
     test_parser = KaParser(Job(), JOB_DICT_KA)
     def test_set_vendor(self):
-        v = TestKaParser.test_parser.set_vendor()
+        v = TestKaParser.test_parser.__set_vendor__()
         self.assertEqual("Mrs Sue Blogs", v.name)
         self.assertEqual("07891123211", v.phone1)
         self.assertEqual(None, v.phone2)
         self.assertEqual("07991332456", v.phone3)
 
     def test_set_agent(self):
-        a = TestKaParser.test_parser.set_agent()
+        a = TestKaParser.test_parser.__set_agent__()
         self.assertEqual("Connells - Stony Stratford", a.name)
         self.assertEqual("01908 222 343", a.phone1)
         self.assertEqual("01908 111 999", a.phone2)
 
     def tests_et_floorplan(self):
-        f = TestKaParser.test_parser.set_floorplan()
+        f = TestKaParser.test_parser.__set_floorplan__()
         self.assertEqual(True, f)
 
     def test_set_photos(self):
-        p = TestKaParser.test_parser.set_photos()
+        p = TestKaParser.test_parser.__set_photos__()
         self.assertEqual(p, 20)
 
     def test_set_notes(self):
-        n = TestKaParser.test_parser.set_notes()
-        print(n)
+        n = TestKaParser.test_parser.__set_notes__()
         self.assertIn("Agency Preferences: Nice photos only please", n[0])
         self.assertIn("General Notes: Take every angle.", n[1])
         self.assertIn("Please get shots of the approach", n[2])
@@ -96,7 +95,7 @@ class TestKaParser(unittest.TestCase):
         self.assertIn("Changed  ", s[0][2])
 
     def test_set_appointment(self):
-        a = TestKaParser.test_parser.set_appointment()
+        a= TestKaParser.test_parser.__set_appointment__()
         self.assertEqual("29, Test Street Testville, Milton Keynes", a.address.street)
         self.assertEqual("MK4 4FY", a.address.postcode)
         self.assertEqual("Fri 08 Feb @ 00:00", a.__str__())
