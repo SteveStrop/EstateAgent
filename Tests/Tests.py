@@ -30,8 +30,11 @@ class TestAppointment(unittest.TestCase):
 class TestClient(unittest.TestCase):
     def test__validate_tel__(self):
         test_client = Client()
-        tels = [('07891465363', '07891 465 363'),
-                ('02077607600', '02077 607 600'),
+        tels = [
+                ('016977 12345', '016977 12345'),
+                ('016977 1234', '016977 1234'),
+                ('07891465363', '07891 465 363'),
+                ('02077607600', '020 7760 7600'),
                 ('07891 465 363', '07891 465 363'),
                 ('(07891)465363', '07891 465 363'),
                 ('(07891) 465 363', '07891 465 363'),
@@ -49,11 +52,10 @@ class TestClient(unittest.TestCase):
                 ('(01908)-501-401', '01908 501 401'),
                 ('01908-501401', '01908 501 401'),
                 ('01908-501-401', '01908 501 401'),
-                ('0207 760 7600', '02077 607 600')
+                ('0207 760 7600', '020 7760 7600')
                 ]
-        # todo this is NOT correct for London (similar issue for other cities as well!!)
         for tel in tels:
-            self.assertEqual(tel[1], test_client.__validate_tel__(tel[0]))
+            self.assertEqual(tel[1], test_client.validate_tel(tel[0]))
 
 
 class TestKaParser(unittest.TestCase):

@@ -18,9 +18,9 @@ class Scraper:
 
     def __init__(self, client, parser):
         """
-        @:param client : ConfigXX file tailored to each client
-        @:param parser : Parser object specific to each client to convert scraped data into Job attributes
-        @:return: None
+        :param client : ConfigXX file tailored to each client
+        :param parser : Parser object specific to each client to convert scraped data into Job attributes
+        :return: None
         """
         self.parser = parser
         self.client = client
@@ -30,7 +30,7 @@ class Scraper:
     def scrape_site(self):
         """
         Use Selenium to log on and scrape data from the client website.
-        @:return: None
+        :return: None
         """
         self.driver = self.__logon__()
         self.jobs = self.__get_jobs__()
@@ -40,7 +40,7 @@ class Scraper:
     def __logon__(self):
         """
         Logon to a web site using credentials and web addresses from ConfigXX
-        @:return Selenium webdriver
+        :return Selenium webdriver
         """
         # create a selenium browser driver
         driver = webdriver.Chrome(self.client.CHROME_DRIVER)
@@ -74,7 +74,7 @@ class Scraper:
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link].
         Create a Job class object for each page visited
-        @:return jobs : list [Job objects]"""
+        :return jobs : list [Job objects]"""
 
         # find all links pointing to job pages from the landing page
         links = BeautifulSoup(self.driver.page_source, 'lxml').find_all('a', href=re.compile(
@@ -86,13 +86,13 @@ class Scraper:
     def __scrape_job__(self, link):
         """
         Scrape the web page specified by 'link' and parse it into a Job object.
-        @:param link : BeautifulSoup.Tag pointing to job page
-        @:return job : Job object containing all scraped and cleaned data from the visited page
+        :param link : BeautifulSoup.Tag pointing to job page
+        :return job : Job object containing all scraped and cleaned data from the visited page
 
         """
         print(type(link))
         # crawl to Job page
-        python_button = self.driver.find_element_by_xpath('//a[@href="' + link['href'] + '"]')
+        python_button = self.driver.find_element_by_xpath('//a[href="' + link['href'] + '"]')
         python_button.click()
         # create a dict of scraped page data matching ConfigXX specifications
         job_dict = self.__get_page_fields__()
@@ -109,7 +109,7 @@ class Scraper:
         """
         Read required data from ConfigXX.JOB_PAGE_DATA and ConfigXX.JOB_PAGE_TABLES.
         Scrape that data into a dict.
-        @:return dict {ConfigXX.JOB_PAGE|DATA|TABLES[key] : scraped value}
+        :return dict {ConfigXX.JOB_PAGE|DATA|TABLES[key] : scraped value}
         """
 
         job_dict = {}
@@ -136,7 +136,7 @@ class Scraper:
         """
         Placeholder for further processing.
         Will eventually store the jobs in a DB via Django.
-        @:return None
+        :return None
         """
         for job in self.jobs:
             print(job, sep="\n")
@@ -152,7 +152,7 @@ class Scraper:
         Use pickle to save objects to file for use in unit testing.
         :param obj: object to be saved
         :param name: filename for object
-        @:return None
+        :return None
         """
         with open('G:/EstateAgent/Tests/obj/' + name + '.pkl', 'wb') as f:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
@@ -199,7 +199,7 @@ class HsScraper(Scraper):
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link] that are in the CONFIRMED_HOME_VISIT_TABLE
         Create a Job object for each page visited
-        @:return jobs : list [Job objects]
+        :return jobs : list [Job objects]
         """
         # read html page data
         html = BeautifulSoup(self.driver.page_source, 'lxml')
@@ -215,7 +215,7 @@ class HsScraper(Scraper):
         """
         Read required data from ConfigHS.JOB_PAGE_TABLES.
         Scrape that data into a dict.
-        @:return dict {ConfigXX.JOB_PAGE_TABLES[key] : scraped value}
+        :return dict {ConfigXX.JOB_PAGE_TABLES[key] : scraped value}
         """
         job_dict = {}
         page_source = BeautifulSoup(self.driver.page_source, 'lxml')

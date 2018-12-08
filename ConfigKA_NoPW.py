@@ -13,9 +13,9 @@ CHROME_DRIVER = "C:\Python36\selenium\webdriver\chrome\chromedriver.exe"
 
 CLIENT = "KeyAGENT"
 WELCOME_PAGE = \
-    "https://www.keyagent-portal.co.uk/Site/Dea/home.aspx?Dea=********************&TAB=MYHOME"
-USERNAME = "***********"
-PASSWORD = "**********"
+    "https://www.keyagent-portal.co.uk/Site/Dea/home.aspx?Dea=272ca14b-8535-453f-bf30-10e5c0318651&TAB=MYHOME"
+USERNAME = "*****************"
+PASSWORD = "***************"
 LOGIN_PAGE = "https://www.keyagent-portal.co.uk"
 LANDING_PAGE = "https://www.keyagent-portal.co.uk/Site/Dea/home.aspx?Dea=272ca14b-8535-453f-bf30-10e5c0318651&TAB" \
                "=MYHOME"
@@ -30,15 +30,20 @@ LOGIN_BUTTON = "ctl00$main$HipPlatformLogin$Button1"
 # -------------------------------------------------------------------------------------------------------------------- #
 
 REGEXP = {
-        "job_page_link": ".*Select.*",
-        "agent":         r"(?:)([ \w]*)(?: MOB)",
-        "vendor":        r"(?:)([ \w]*)(?: DAY)",
-        "phone1":        r"(?:TEL:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*EVE)",
-        "vendor_mob":    r"(?:MOB:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*EVE)",
-        "agent_mob":     r"(?:MOB:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*TEL)",
-        "day":           r"(?:DAY:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*MOB)",
-        "eve":           r"(?:EVE:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*Email)",
-        "photo_count":   r"(?:\D*)(\d+)\D*(?:photos)"
+        "job_page_link": ".*Select.*",  # matches all links that point to job pages
+        "agent":         r"(?:Agency Branch: )(.*)",  # matches Agent name after Agency Branch in notes.
+        "vendor":        r"(?:)([ \w]*)(?: DAY)",  # matches Vendor name before DAY phone no.
+        "phone1":        r"(?:TEL:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*EVE)",  # matches Agent TEL phone no.
+        "vendor_mob":    r"(?:MOB:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*EVE)",  # matches Vendor MOB phone no.
+        "agent_mob":     r"(?:MOB:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*TEL)",  # matches Agent MOB phone number
+        "day":           r"(?:DAY:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*MOB)",  # matches Vendor DAY (main) phone no.
+        "eve":           r"(?:EVE:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*Email)",  # matches Vendor EVE phone no.
+        "photo_count":   r"(?:\D*)(\d+)\D*(?:photos)",  # matches number of photos required for job
+        "time_day":      r"(?:\D{4})(\d{2})",  # matches dd in ddd-dd mmm yy HHMM
+        "time_month":      r"(?: )([JFMAMASOND]\w{2})",  # matches mmm in ddd-dd mmm yy HHMM
+        "time_year":     r"(?: )(\d{2})(?: )",  # matches yy in ddd-dd mmm yy HHMM
+        "time_hour":     r"(?:\d{2} )(\d{2})",  # matches HH in ddd-dd mmm yy HHMM
+        "time_min":     r"(?:\d{2} \d{2})(\d{2})"  # matches MM in ddd-dd mmm yy HHMM
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #

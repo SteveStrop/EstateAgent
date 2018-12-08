@@ -14,10 +14,10 @@ class Parser:
 
     def __init__(self, job, scraper_data, config=None):
         """
-        @:param job          : Job object where parsed data will be stored
-        @:param scraper_data : dict mirroring ConfigXx.JOB_PAGE_DATA.
+        :param job          : Job object where parsed data will be stored
+        :param scraper_data : dict mirroring ConfigXx.JOB_PAGE_DATA.
                                It contains a complete description of a job scraped from a client's website
-        @:param config       : Master configuration file detailing how the parser should read the scraped data.
+        :param config       : Master configuration file detailing how the parser should read the scraped data.
                                Edit this if the client website structure changes.
         """
         self.client = config.CLIENT
@@ -30,70 +30,70 @@ class Parser:
     def map_job(self):
         """
         Map each data field from the job page to the corresponding attribute of self.job
-        @:return None
+        :return None
         """
         return NotImplementedError
 
     def __set_id__(self):
         """
         Parse unique ID for job
-        @:return string
+        :return string
         """
         return NotImplementedError
 
     def __set_agent__(self):
         """
         Parse agent name and branch.
-        @:return string
+        :return string
         """
         return NotImplementedError
 
     def __set_vendor__(self):
         """
         Parse vendor name and three telephone numbers if present.
-        @:return Vendor object
+        :return Vendor object
         """
         return NotImplementedError
 
     def __set_property_type__(self):
         """
         Parse property type.
-        @:return string
+        :return string
         """
         return NotImplementedError
 
     def __set_beds__(self):
         """
         Parse number of bedrooms.
-        @:return string
+        :return string
         """
         return NotImplementedError
 
     def __set_floorplan__(self):
         """
         Parse floorplan requirements.
-        @:return boolean True if floorplan needed else False
+        :return boolean True if floorplan needed else False
         """
         return NotImplementedError
 
     def __set_photos__(self):
         """
         Parse photos quantity required.
-        @:return int
+        :return int
         """
         return NotImplementedError
 
     def __set_notes__(self):
         """
         Parse and summarise notes.
-        @:return list
+        :return list
         """
         return NotImplementedError
 
     def set_appointment(self):
         """
         Parse date and time using set_time and set_date methods.
-        @:return: Appointment object:
+        :return: Appointment object:
          """
         appt = Classes.Appointment(self.address, self.time)
         return appt
@@ -102,9 +102,9 @@ class Parser:
     def set_time(time, time_format):
         """
         Helper method for set_appointment.
-        @:param time        : string
-        @:param time_format : string defines format of time string using Datetime conventions (%m %D %y etc)
-        @:return Datetime object or None
+        :param time        : string
+        :param time_format : string defines format of time string using Datetime conventions (%m %D %y etc)
+        :return Datetime object or None
         """
         try:
             return dt.datetime.strptime(time, time_format)
@@ -116,12 +116,12 @@ class Parser:
         """
         Helper method for set_appointment.
         Parse full UK address and partition into street address and postcode parts.
-        @:param address : string
-        @:return : Address object
+        :param address : string
+        :return : Address object
         """
         try:
             # get valid postcode  ([0] is first occurrence)
-            postcode = (re.findall(Classes.Address.postcode_regexp, address))[0]
+            postcode = (re.findall(Classes.Address.POSTCODE_REGEXP, address))[0]
         except IndexError:
             # no match
             postcode = ""
@@ -137,7 +137,7 @@ class Parser:
         """
         Find regexp in string.
         This is the main method for extracting cleaned data from a client's web page.
-        @:return string or None
+        :return string or None
         """
         try:
             return re.search(regexp, string).group(1)
@@ -160,7 +160,7 @@ class KaParser(Parser):
     def map_job(self):
         """
         Map each data field from the job page to an attribute of self.job
-        @:return None
+        :return None
         """
         self.job.client = self.client
         self.job.id = self.__set_id__()
@@ -181,14 +181,14 @@ class KaParser(Parser):
     def __set_id__(self):
         """
         Parse unique ID for job
-        @:return string
+        :return string
         """
         return self.scraper_data["JOB_DATA_ID"]
 
     def __set_agent__(self):
         """
         Parse agent name and branch.
-        @:return string
+        :return string
         """
         # parse agent name from notes as this contains branch name info
         notes = self.scraper_data["JOB_DATA_NOTES"]
@@ -204,7 +204,7 @@ class KaParser(Parser):
     def __set_vendor__(self):
         """
         Parse vendor name and three telephone numbers if present.
-        @:return Vendor object
+        :return Vendor object
         """
         vendor = self.scraper_data["JOB_DATA_VENDOR"]
         vendor_name = self.parse(self.regexp["vendor"], vendor)
@@ -216,28 +216,28 @@ class KaParser(Parser):
     def __set_property_type__(self):
         """
         Parse property type.
-        @:return string
+        :return string
         """
         return self.scraper_data["JOB_DATA_PROPERTY_TYPE"]
 
     def __set_beds__(self):
         """
         Parse number of bedrooms.
-        @:return string
+        :return string
         """
         return self.scraper_data["JOB_DATA_BEDS"]
 
     def __set_floorplan__(self):
         """
         Parse floorplan requirements.
-        @:return boolean True if floorplan needed else False
+        :return boolean True if floorplan needed else False
         """
         return self.scraper_data["JOB_DATA_FLOORPLAN"].strip().upper().startswith("YES")
 
     def __set_photos__(self):
         """
         Parse photos quantity required.
-        @:return int
+        :return int
         """
         photos = self.scraper_data["JOB_DATA_PHOTOS"]
         try:
@@ -248,7 +248,7 @@ class KaParser(Parser):
     def __set_notes__(self):
         """
         Parse and summarise notes.
-        @:return list
+        :return list
         """
         notes = self.scraper_data["JOB_DATA_NOTES"]  # strip out any backslashes to deal with NA and N/A and split the
         # note into a set of lines
@@ -269,7 +269,7 @@ class KaParser(Parser):
     def __set_address__(self):
         """
         Extract address field from scraper_data and send it to base Parser.set_address().
-        @:return Address object
+        :return Address object
         """
         address = self.scraper_data["JOB_DATA_APPOINTMENT_ADDRESS"]
         return self.set_address(address)
@@ -278,7 +278,7 @@ class KaParser(Parser):
         """
         Extract date & time field from scraper_data.
         Define Datetime format for that data and send these to base Parser.set_time().
-        @:return Datetime object
+        :return Datetime object
         """
         time = self.scraper_data["JOB_DATA_APPOINTMENT"]
         time_format = "%a-%d %b %y %H%M"
@@ -290,7 +290,7 @@ class KaParser(Parser):
         """
         Parse the specific requirements table.
         Currently this is only used for streetscape but it could be expanded to cover any specific photo requirements.
-       @:return dict {requirement : quantity}
+       :return dict {requirement : quantity}
        """
         # make pandas dataframe from table
         table = self.scraper_data["JOB_DATA_SPECIFIC_REQS_TABLE"]
@@ -305,7 +305,7 @@ class KaParser(Parser):
         """
         Parse job history.
         Abbreviate jargon using Config.JOB_PAGE_SITE_VISIT_ABBRS
-       @:return list [Date, Author, Note]
+       :return list [Date, Author, Note]
        """
 
         def abbreviate(string):
@@ -339,7 +339,7 @@ class HsParser(Parser):
     def map_job(self):
         """
         Map each data field from the job page to an attribute of self.job
-        @:return None
+        :return None
         """
 
         # get the data and read it into a pandas table
@@ -360,7 +360,7 @@ class HsParser(Parser):
     def __set_id__(self):
         """
         Parse unique job ID
-        @:return string
+        :return string
         """
         try:
             # extract the series corresponding to the ID key in the Config file
@@ -373,7 +373,7 @@ class HsParser(Parser):
         """
         Parse vendor name only.
         No vendor phone numbers on House Simple job page.
-        @:return Vendor object
+        :return Vendor object
         """
         try:
             vendor = self.table[ConfigHS.JOB_PAGE_DATA["Vendor"]].values[0]
@@ -384,7 +384,7 @@ class HsParser(Parser):
     def __set_property_type__(self):
         """
         Parse property type.
-        @:return string
+        :return string
         """
         try:
             # extract the series corresponding to the Property key in the Config file
@@ -396,7 +396,7 @@ class HsParser(Parser):
     def __set_beds__(self):
         """
         Parse number of bedrooms.
-        @:return string
+        :return string
         """
         try:
             # extract the series corresponding to the Beds key in the Config file
@@ -408,7 +408,7 @@ class HsParser(Parser):
     def __set_address__(self):
         """
         Extract address field from scraper_data and send it to base Parser.set_address().
-        @:return Address object
+        :return Address object
         """
         address = self.table[ConfigHS.JOB_PAGE_DATA["Address"]].values[0].strip()
         return self.set_address(address)
@@ -417,7 +417,7 @@ class HsParser(Parser):
         """
         Extract date & time field from scraper_data.
         Define Datetime format for that data and send these to base Parser.set_time().
-        @:return Datetime object
+        :return Datetime object
         """
         time = self.table[ConfigHS.JOB_PAGE_DATA["Appointment"]].values[0]
         time_format = "%d/%m/%Y @ %H:%M"

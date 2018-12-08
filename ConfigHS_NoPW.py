@@ -13,8 +13,8 @@ CHROME_DRIVER = "C:\Python36\selenium\webdriver\chrome\chromedriver.exe"
 
 CLIENT = "House Simple"
 WELCOME_PAGE = "https://www.housesimple.com/admin/dashboard"
-USERNAME = "***********"
-PASSWORD = "**********"
+USERNAME = "***************"
+PASSWORD = "***************"
 LOGIN_PAGE = "https://www.housesimple.com/admin/dashboard"
 LANDING_PAGE = "https://www.housesimple.com/admin/dashboard"
 USERNAME_FIELD = "_username"
@@ -29,11 +29,11 @@ LOGIN_BUTTON = "_submit"
 
 REGEXP = {
         "job_page_link": "show",  # matches links on dashboard that point to jobs
-        "day":           r'(?:)(\d{2})(?:\/.*)',  # matches dd of dd/mm/yyyy @ HH:MM
-        "month":         r'(?:\d{2}\/)(\d{2})',  # matches mm of dd/mm/yyyy @ HH:MM
-        "year":              r'(?:.*\/)(\d{4})', # matches yyyy of dd/mm/yyyy @ HH:MM
-        "hour":              r'(?:.*@\D*)(\d{2})', # matches HH of dd/mm/yyyy @ HH:MM
-        "min":              r'(?:.*:)(\d{2})',# matches MM of dd/mm/yyyy @ HH:MM
+        "time_day":           r'(?:)(\d{2})(?:\/.*)',  # matches dd in dd/mm/yyyy @ HH:MM
+        "time_month":         r'(?:\d{2}\/)(\d{2})',  # matches mm in dd/mm/yyyy @ HH:MM
+        "time_year":              r'(?:.*\/)(\d{4})', # matches yyyy in dd/mm/yyyy @ HH:MM
+        "time_hour":              r'(?:.*@\D*)(\d{2})', # matches HH in dd/mm/yyyy @ HH:MM
+        "time_min":              r'(?:.*:)(\d{2})',# matches MM in dd/mm/yyyy @ HH:MM
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
