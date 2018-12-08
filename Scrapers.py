@@ -78,7 +78,7 @@ class Scraper:
 
         # find all links pointing to job pages from the landing page
         links = BeautifulSoup(self.driver.page_source, 'lxml').find_all('a', href=re.compile(
-                self.client.REGEXP["job_page_link"]))
+                self.client.REGEXP["JOB_PAGE_LINK"]))
         # create list of scraped jobs
         jobs = [self.__scrape_job__(link) for link in links]
         return jobs
@@ -90,9 +90,8 @@ class Scraper:
         :return job : Job object containing all scraped and cleaned data from the visited page
 
         """
-        print(type(link))
         # crawl to Job page
-        python_button = self.driver.find_element_by_xpath('//a[href="' + link['href'] + '"]')
+        python_button = self.driver.find_element_by_xpath('//a[@href="' + link['href'] + '"]')
         python_button.click()
         # create a dict of scraped page data matching ConfigXX specifications
         job_dict = self.__get_page_fields__()
@@ -206,7 +205,7 @@ class HsScraper(Scraper):
         # find home visits_table
         table = html.find('table', self.client.CONFIRMED_HOME_VISIT_TABLE)
         # find all links pointing to job pages
-        links = table.find_all('a', href=re.compile(self.client.REGEXP["job_page_link"]))
+        links = table.find_all('a', href=re.compile(self.client.REGEXP["JOB_PAGE_LINK"]))
         # loop though each job page and scrape the job details
         jobs = [self.__scrape_job__(link) for link in links]
         return jobs

@@ -69,9 +69,9 @@ class Appointment:
 
 class Client:
     """
-    Stores contact details for a client.
+    Stores contact details for a config.
     Clients may have websites where they list details of jobs.
-    If they do, then each client has a Scraper, Parser, and ConfigXX file (XX denotes the client).
+    If they do, then each config has a Scraper, Parser, and ConfigXX file (XX denotes the config).
     These allow parsing of the jobs into Job objects (defined below) for saving to the database.
     """
 
@@ -225,7 +225,7 @@ class Agent(Client):
 
 class Job:
     """
-    Holds all data that completely describes a job from any client.
+    Holds all data that completely describes a job from any config.
     Note not all clients require all attributes to contain valid data
     A Job contains all information needed to successfully carry out a photoshoot of a house for sale.
     It references:

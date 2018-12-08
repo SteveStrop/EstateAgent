@@ -16,12 +16,12 @@ class Parser:
         """
         :param job          : Job object where parsed data will be stored
         :param scraper_data : dict mirroring ConfigXx.JOB_PAGE_DATA.
-                               It contains a complete description of a job scraped from a client's website
+                               It contains a complete description of a job scraped from a config's website
         :param config       : Master configuration file detailing how the parser should read the scraped data.
-                               Edit this if the client website structure changes.
+                               Edit this if the config website structure changes.
         """
         self.client = config.CLIENT
-        self.regexp = config.REGEXP  # all the regexp needed to parse the client site in one place
+        self.regexp = config.REGEXP  # all the regexp needed to parse the config site in one place
         self.scraper_data = scraper_data
         self.time = None
         self.address = None
@@ -136,7 +136,7 @@ class Parser:
     def parse(regexp, string):
         """
         Find regexp in string.
-        This is the main method for extracting cleaned data from a client's web page.
+        This is the main method for extracting cleaned data from a config's web page.
         :return string or None
         """
         try:
@@ -192,13 +192,13 @@ class KaParser(Parser):
         """
         # parse agent name from notes as this contains branch name info
         notes = self.scraper_data["JOB_DATA_NOTES"]
-        agent_name = self.parse(self.regexp["agent"], notes).strip()
+        agent_name = self.parse(self.regexp["AGENT"], notes).strip()
 
         # parse agent for phone numbers
         # todo add third phone number (EVE) NOTE nedd to add it to Agent class as well
         agent = self.scraper_data["JOB_DATA_AGENT"]
-        tel = self.parse(self.regexp["phone1"], agent).strip()
-        mob = self.parse(self.regexp["agent_mob"], agent).strip()
+        tel = self.parse(self.regexp["PHONE1"], agent).strip()
+        mob = self.parse(self.regexp["AGENT_MOB"], agent).strip()
         return Classes.Agent(name=agent_name, phone1=tel, phone2=mob)
 
     def __set_vendor__(self):
@@ -207,10 +207,10 @@ class KaParser(Parser):
         :return Vendor object
         """
         vendor = self.scraper_data["JOB_DATA_VENDOR"]
-        vendor_name = self.parse(self.regexp["vendor"], vendor)
-        tel = self.parse(self.regexp["day"], vendor)
-        mob = self.parse(self.regexp["vendor_mob"], vendor)
-        eve = self.parse(self.regexp["eve"], vendor)
+        vendor_name = self.parse(self.regexp["VENDOR"], vendor)
+        tel = self.parse(self.regexp["PHONE_DAY"], vendor)
+        mob = self.parse(self.regexp["VENDOR_MOB"], vendor)
+        eve = self.parse(self.regexp["PHONE_EVE"], vendor)
         return Classes.Vendor(name=vendor_name, phone1=tel, phone2=mob, phone3=eve)
 
     def __set_property_type__(self):
@@ -241,7 +241,7 @@ class KaParser(Parser):
         """
         photos = self.scraper_data["JOB_DATA_PHOTOS"]
         try:
-            return int(self.parse(self.regexp["photo_count"], photos).strip())
+            return int(self.parse(self.regexp["PHOTO_COUNT"], photos).strip())
         except ValueError:
             return 0
 
@@ -281,7 +281,7 @@ class KaParser(Parser):
         :return Datetime object
         """
         time = self.scraper_data["JOB_DATA_APPOINTMENT"]
-        time_format = "%a-%d %b %y %H%M"
+        time_format = ConfigKA.TIME_FORMAT
         return self.set_time(time, time_format)
 
     # Client specific methods
@@ -376,7 +376,7 @@ class HsParser(Parser):
         :return Vendor object
         """
         try:
-            vendor = self.table[ConfigHS.JOB_PAGE_DATA["Vendor"]].values[0]
+            vendor = self.table[ConfigHS.JOB_PAGE_DATA["VENDOR"]].values[0]
         except KeyError:
             vendor = None
         return Classes.Vendor(name=vendor)
@@ -388,7 +388,7 @@ class HsParser(Parser):
         """
         try:
             # extract the series corresponding to the Property key in the Config file
-            p_type = self.table[ConfigHS.JOB_PAGE_DATA["Property"]].values[0]  # return the first item in the series
+            p_type = self.table[ConfigHS.JOB_PAGE_DATA["PROPERTY"]].values[0]  # return the first item in the series
         except KeyError:
             p_type = None
         return p_type
@@ -400,7 +400,7 @@ class HsParser(Parser):
         """
         try:
             # extract the series corresponding to the Beds key in the Config file
-            beds = self.table[ConfigHS.JOB_PAGE_DATA["Beds"]].values[0]  # return the first item in the series
+            beds = self.table[ConfigHS.JOB_PAGE_DATA["BEDS"]].values[0]  # return the first item in the series
         except KeyError:
             beds = None
         return beds
@@ -410,7 +410,7 @@ class HsParser(Parser):
         Extract address field from scraper_data and send it to base Parser.set_address().
         :return Address object
         """
-        address = self.table[ConfigHS.JOB_PAGE_DATA["Address"]].values[0].strip()
+        address = self.table[ConfigHS.JOB_PAGE_DATA["ADDRESS"]].values[0].strip()
         return self.set_address(address)
 
     def __set_time__(self):
@@ -419,6 +419,6 @@ class HsParser(Parser):
         Define Datetime format for that data and send these to base Parser.set_time().
         :return Datetime object
         """
-        time = self.table[ConfigHS.JOB_PAGE_DATA["Appointment"]].values[0]
+        time = self.table[ConfigHS.JOB_PAGE_DATA["APPOINTMENT"]].values[0]
         time_format = "%d/%m/%Y @ %H:%M"
         return self.set_time(time, time_format)

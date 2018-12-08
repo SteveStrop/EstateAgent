@@ -1,9 +1,10 @@
-"""Configuration file containing complete specifications for accessing a client's webpage to enable
+"""Configuration file containing complete specifications for accessing a config's webpage to enable
 scraping of job
 related data
 """
 # Environment variables-------------------------------------------------------------------------------------------------
 CHROME_DRIVER = "C:\Python36\selenium\webdriver\chrome\chromedriver.exe"
+TIME_FORMAT="%d/%m/%Y @ %H:%M"
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -13,8 +14,8 @@ CHROME_DRIVER = "C:\Python36\selenium\webdriver\chrome\chromedriver.exe"
 
 CLIENT = "House Simple"
 WELCOME_PAGE = "https://www.housesimple.com/admin/dashboard"
-USERNAME = "***************"
-PASSWORD = "***************"
+USERNAME = "********"
+PASSWORD = "********"
 LOGIN_PAGE = "https://www.housesimple.com/admin/dashboard"
 LANDING_PAGE = "https://www.housesimple.com/admin/dashboard"
 USERNAME_FIELD = "_username"
@@ -28,12 +29,12 @@ LOGIN_BUTTON = "_submit"
 # -------------------------------------------------------------------------------------------------------------------- #
 
 REGEXP = {
-        "job_page_link": "show",  # matches links on dashboard that point to jobs
-        "time_day":           r'(?:)(\d{2})(?:\/.*)',  # matches dd in dd/mm/yyyy @ HH:MM
-        "time_month":         r'(?:\d{2}\/)(\d{2})',  # matches mm in dd/mm/yyyy @ HH:MM
-        "time_year":              r'(?:.*\/)(\d{4})', # matches yyyy in dd/mm/yyyy @ HH:MM
-        "time_hour":              r'(?:.*@\D*)(\d{2})', # matches HH in dd/mm/yyyy @ HH:MM
-        "time_min":              r'(?:.*:)(\d{2})',# matches MM in dd/mm/yyyy @ HH:MM
+        "JOB_PAGE_LINK": "show",  # matches links on dashboard that point to jobs
+        "TIME_DAY":           r'(?:)(\d{2})(?:\/.*)',  # matches dd in dd/mm/yyyy @ HH:MM
+        "TIME_MONTH":         r'(?:\d{2}\/)(\d{2})',  # matches mm in dd/mm/yyyy @ HH:MM
+        "TIME_YEAR":              r'(?:.*\/)(\d{4})', # matches yyyy in dd/mm/yyyy @ HH:MM
+        "TIME_HOUR":              r'(?:.*@\D*)(\d{2})', # matches HH in dd/mm/yyyy @ HH:MM
+        "TIME_MIN":              r'(?:.*:)(\d{2})',# matches MM in dd/mm/yyyy @ HH:MM
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -44,12 +45,11 @@ REGEXP = {
 
 JOB_PAGE_DATA = {
         "ID":          "Reference",
-        "Address":     "Address",
-        "Beds":        "Number of bedrooms",
-        "Property":    "Property type",
-        "Status":      4,
-        "Appointment": "Appointment time",
-        "Vendor":      "Name"
+        "ADDRESS":     "Address",
+        "BEDS":        "Number of bedrooms",
+        "PROPERTY":    "Property type",
+        "APPOINTMENT": "Appointment time",
+        "VENDOR":      "Name"
 }
 JOB_PAGE_TABLES = {
         "JOB_DATA_TABLE": "table"
