@@ -1,4 +1,4 @@
-"""Configuration file containing complete specifications for accessing a client's webpage to enable
+"""Configuration file containing complete specifications for accessing a config's webpage to enable
 scraping of job
 related data
 """

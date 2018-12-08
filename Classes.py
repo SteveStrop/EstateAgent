@@ -8,13 +8,13 @@ class Address:
     """
     POSTCODE_REGEXP = r'[A-Z]{1,2}[\dR][\dA-Z]? [\d][A-Z]{2}'
 
-    def __init__(self, address=None, postcode=""):
+    def __init__(self, street=None, postcode=""):
         """
-        :param address:  string
+        :param street:  string
         :param postcode: string
         """
 
-        self.street = address
+        self.street = street
         self.postcode = self.__validate_postcode__(postcode)
 
     @staticmethod
@@ -66,28 +66,29 @@ class Appointment:
         except (TypeError, AttributeError):
             return "TBA"
 
-
 class Client:
     """
-    Stores contact details for a config.
+    Stores contact details.
     Clients may have websites where they list details of jobs.
-    If they do, then each config has a Scraper, Parser, and ConfigXX file (XX denotes the config).
+    If they do, then each  has a Scraper, Parser, and ConfigXX file (XX denotes the config).
     These allow parsing of the jobs into Job objects (defined below) for saving to the database.
     """
 
-    def __init__(self, name=None, phone1=None, secondary_contact=None, phone2=None, notes=None):
+    def __init__(self, name_1=None, name_2=None, phone_1=None, phone_2=None, phone_3=None, notes=None):
         """
-        :param name:              string
-        :param phone1:            string
-        :param secondary_contact: string
-        :param phone2:            string
-        :param notes              string
-        """
+        :param name_1:  string
+        :param name_2:  string
+        :param phone_1: string
+        :param phone_2: string
+        :param phone_3: string
+        :param notes:   string
+    """
 
-        self.name = name
-        self.phone1 = self.validate_tel(phone1)
-        self.secondary_contact = secondary_contact
-        self.phone2 = self.validate_tel(phone2)
+        self.name_1 = name_1
+        self.name_2 = name_2
+        self.phone_1 = self.validate_tel(phone_1)
+        self.phone_2 = self.validate_tel(phone_2)
+        self.phone_3 = self.validate_tel(phone_3)
         self.notes = notes
 
     def validate_tel(self, tel):
@@ -171,56 +172,44 @@ class Client:
             return None  # not a valid UK phone number
         # cast phone to a list
         phone = list(phone)
-        # build correctly formatted phone by popping first element if matching template character is non blank and strip any whitespace
+        # build correctly formatted phone by popping first element if matching template character is non blank and
+        # strip any whitespace
         return "".join([phone.pop(0) if c != " " else " " for c in template]).strip()
 
     def __str__(self):
-        return f"{self.name if self.name else ''} ({self.phone1 if self.phone1 else ''})" \
-            f" ({self.phone2 if self.phone2 else ''})"
+        name1 =  f"Primary contact:   {self.name_1:30.40}" if self.name_1 else ""
+        phone1 = f"Tel: {self.phone_1:>13.13}" if self.phone_1 else ""
+        name2 =  f"\nSecondary contact: {self.name_2:30.40}" if self.name_2 else ""
+        phone2 = f"Tel: {self.phone_2:>13.13}" if self.phone_2 else ""
+        name3  = f"\nOther contact:     {' ':30.40}" if self.phone_3 else ""
+        phone3 = f"Tel: {self.phone_3:>13.13}" if self.phone_3 else ""
 
-
-class Vendor:
-    """
-    Stores contact details for a property vendor.
-    """
-
-    def __init__(self, name=None, phone1=None, phone2=None, phone3=None):
-        """
-        :param name:   string
-        :param phone1: string
-        :param phone2: string
-        :param phone3: string
-        """
-        self.name = name
-        self.phone1 = phone1
-        self.phone2 = phone2
-        self.phone3 = phone3
-
-    def __str__(self):
-        return f"{self.name if self.name else 'N/A'}" \
-            f"({self.phone1 if self.phone1 else 'N/A'}) " \
-            f"({self.phone2 if self.phone2 else 'N/A'})" \
-            f"({self.phone3 if self.phone3 else 'N/A'})"
+        return f"{name1} {phone1}" \
+            f"{name2} {phone2}" \
+            f"{name3} {phone3}"
 
 
 class Agent(Client):
-    """
-    Stores contact details for an Estate agent at branch level
-    """
+    def __init__(self, name_1=None, name_2=None, phone_1=None, phone_2=None, phone_3=None, notes=None, address=None,branch=None):
+        """
+        :param name_1: string
+        :param name_2: string
+        :param phone_1: string
+        :param phone_2: string
+        :param phone_3: string
+        :param notes: string
+        :param address: Address object
+        :param branch string
+        """
+        super().__init__(name_1, name_2, phone_1, phone_2, phone_3, notes)
+        self.address = address
+        self.branch = branch
 
-    def __init__(self, name=None, phone1=None, secondary_contact=None, phone2=None, notes=None, address=None,
-                 postcode=None):
-        """
-        :param name:              string
-        :param phone1:            string
-        :param secondary_contact: string
-        :param phone2:            string
-        :param notes:             string
-        :param address:           string
-        :param postcode:          string
-        """
-        super().__init__(name, phone1, secondary_contact, phone2, notes)
-        self.address = Address(address=address, postcode=postcode)
+    def __str__(self):
+        branch = f"Branch:\n{self.branch}" if self.branch else ""
+        address = f"\nAddress:\n{self.address}" if self.address else ""
+        return branch + super().__str__() + address
+
 
 
 class Job:
@@ -285,7 +274,7 @@ class Job:
     def set_appointment_address(self, address, postcode):
         """" Set job appointment address by creating Address object and setting it's values
         @:return True if successful False otherwise"""
-        add = Address(address=address, postcode=postcode)
+        add = Address(street=address, postcode=postcode)
         self.appointment.address.street = add.street
         self.appointment.address.postcode = add.postcode
         return self.appointment.address.street and self.appointment.address.postcode

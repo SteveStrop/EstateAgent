@@ -68,16 +68,16 @@ class TestKaParser(unittest.TestCase):
 
     def test_set_agent(self):
         a = TestKaParser.test_parser.__set_agent__()
-        self.assertEqual("Connells - Stony Stratford", a.name)
-        self.assertEqual("01908 222 343", a.phone1)
-        self.assertEqual("01908 111 999", a.phone2)
+        self.assertEqual("Connells - Stony Stratford", a.branch)
+        self.assertEqual("01908 222 343", a.phone_1)
+        self.assertEqual("01908 111 999", a.phone_2)
 
     def test_set_vendor(self):
         v = TestKaParser.test_parser.__set_vendor__()
-        self.assertEqual("Mrs Sue Blogs", v.name)
-        self.assertEqual("07891123211", v.phone1)
-        self.assertEqual(None, v.phone2)
-        self.assertEqual("07991332456", v.phone3)
+        self.assertEqual("Mrs Sue Blogs", v.name_1)
+        self.assertEqual("07891 123 211", v.phone_1)
+        self.assertEqual(None, v.phone_2)
+        self.assertEqual("07991 332 456", v.phone_3)
 
     def test_set_property_type(self):
         p = TestKaParser.test_parser.__set_property_type__()
@@ -127,8 +127,8 @@ class TestHsParser(unittest.TestCase):
 
     def test_set_vendor(self):
         v = TestHsParser.test_parser.__set_vendor__()
-        self.assertEqual("joe blogs", v.name)
-        self.assertEqual(None, v.phone1)
+        self.assertEqual("joe blogs", v.name_1)
+        self.assertEqual(None, v.phone_1)
 
     def test_set_property_type(self):
         p = TestHsParser.test_parser.__set_property_type__()

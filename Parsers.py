@@ -20,8 +20,8 @@ class Parser:
         :param config       : Master configuration file detailing how the parser should read the scraped data.
                                Edit this if the config website structure changes.
         """
+        self.config = config
         self.client = config.CLIENT
-        self.regexp = config.REGEXP  # all the regexp needed to parse the config site in one place
         self.scraper_data = scraper_data
         self.time = None
         self.address = None
@@ -51,7 +51,7 @@ class Parser:
     def __set_vendor__(self):
         """
         Parse vendor name and three telephone numbers if present.
-        :return Vendor object
+        :return Client object
         """
         return NotImplementedError
 
@@ -192,14 +192,14 @@ class KaParser(Parser):
         """
         # parse agent name from notes as this contains branch name info
         notes = self.scraper_data["JOB_DATA_NOTES"]
-        agent_name = self.parse(self.regexp["AGENT"], notes).strip()
+        agent_name = self.parse(self.config.REGEXP["AGENT"], notes).strip()
 
         # parse agent for phone numbers
-        # todo add third phone number (EVE) NOTE nedd to add it to Agent class as well
         agent = self.scraper_data["JOB_DATA_AGENT"]
-        tel = self.parse(self.regexp["PHONE1"], agent).strip()
-        mob = self.parse(self.regexp["AGENT_MOB"], agent).strip()
-        return Classes.Agent(name=agent_name, phone1=tel, phone2=mob)
+        tel = self.parse(self.config.REGEXP["PHONE_1"], agent)
+        mob = self.parse(self.config.REGEXP["AGENT_MOB"], agent)
+        eve = self.parse(self.config.REGEXP["PHONE_EVE"], agent)
+        return Classes.Agent(branch=agent_name, phone_1=tel, phone_2=mob, phone_3=eve)
 
     def __set_vendor__(self):
         """
@@ -207,11 +207,11 @@ class KaParser(Parser):
         :return Vendor object
         """
         vendor = self.scraper_data["JOB_DATA_VENDOR"]
-        vendor_name = self.parse(self.regexp["VENDOR"], vendor)
-        tel = self.parse(self.regexp["PHONE_DAY"], vendor)
-        mob = self.parse(self.regexp["VENDOR_MOB"], vendor)
-        eve = self.parse(self.regexp["PHONE_EVE"], vendor)
-        return Classes.Vendor(name=vendor_name, phone1=tel, phone2=mob, phone3=eve)
+        vendor_name = self.parse(self.config.REGEXP["VENDOR"], vendor)
+        tel = self.parse(self.config.REGEXP["PHONE_DAY"], vendor)
+        mob = self.parse(self.config.REGEXP["VENDOR_MOB"], vendor)
+        eve = self.parse(self.config.REGEXP["PHONE_EVE"], vendor)
+        return Classes.Client(name_1=vendor_name, phone_1=tel, phone_2=mob, phone_3=eve)
 
     def __set_property_type__(self):
         """
@@ -241,7 +241,7 @@ class KaParser(Parser):
         """
         photos = self.scraper_data["JOB_DATA_PHOTOS"]
         try:
-            return int(self.parse(self.regexp["PHOTO_COUNT"], photos).strip())
+            return int(self.parse(self.config.REGEXP["PHOTO_COUNT"], photos).strip())
         except ValueError:
             return 0
 
@@ -379,7 +379,7 @@ class HsParser(Parser):
             vendor = self.table[ConfigHS.JOB_PAGE_DATA["VENDOR"]].values[0]
         except KeyError:
             vendor = None
-        return Classes.Vendor(name=vendor)
+        return Classes.Client(name_1=vendor)
 
     def __set_property_type__(self):
         """

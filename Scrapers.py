@@ -16,20 +16,20 @@ class Scraper:
     Crawl through jobs matching Config.REGEXP['job_page_link'] and create a Job object for each one.
     Store a list of all Jobs in self.jobs"""
 
-    def __init__(self, client, parser):
+    def __init__(self, config, parser):
         """
-        :param client : ConfigXX file tailored to each client
-        :param parser : Parser object specific to each client to convert scraped data into Job attributes
+        :param config : ConfigXX file tailored to each config
+        :param parser : Parser object specific to each config to convert scraped data into Job attributes
         :return: None
         """
         self.parser = parser
-        self.client = client
+        self.config = config
         self.driver = None  # Selenium webdriver
         self.jobs = None
 
     def scrape_site(self):
         """
-        Use Selenium to log on and scrape data from the client website.
+        Use Selenium to log on and scrape data from the config website.
         :return: None
         """
         self.driver = self.__logon__()
@@ -43,18 +43,18 @@ class Scraper:
         :return Selenium webdriver
         """
         # create a selenium browser driver
-        driver = webdriver.Chrome(self.client.CHROME_DRIVER)
+        driver = webdriver.Chrome(self.config.CHROME_DRIVER)
 
         # read credential and addresses
-        username = self.client.USERNAME
-        password = self.client.PASSWORD
-        login_pg = self.client.LOGIN_PAGE
-        landing_pg = self.client.LANDING_PAGE
-        username_field = self.client.USERNAME_FIELD
-        password_field = self.client.PASSWORD_FIELD
-        login_btn = self.client.LOGIN_BUTTON
+        username = self.config.USERNAME
+        password = self.config.PASSWORD
+        login_pg = self.config.LOGIN_PAGE
+        landing_pg = self.config.LANDING_PAGE
+        username_field = self.config.USERNAME_FIELD
+        password_field = self.config.PASSWORD_FIELD
+        login_btn = self.config.LOGIN_BUTTON
 
-        # Navigate to the client home page
+        # Navigate to the config home page
         driver.get(login_pg)
 
         # find input fields and log on
@@ -78,7 +78,7 @@ class Scraper:
 
         # find all links pointing to job pages from the landing page
         links = BeautifulSoup(self.driver.page_source, 'lxml').find_all('a', href=re.compile(
-                self.client.REGEXP["JOB_PAGE_LINK"]))
+                self.config.REGEXP["JOB_PAGE_LINK"]))
         # create list of scraped jobs
         jobs = [self.__scrape_job__(link) for link in links]
         return jobs
@@ -113,7 +113,7 @@ class Scraper:
 
         job_dict = {}
         page_source = BeautifulSoup(self.driver.page_source, 'lxml')
-        data = self.client.JOB_PAGE_DATA
+        data = self.config.JOB_PAGE_DATA
         # scrape the text fields
         for key in data.keys():
             try:
@@ -122,7 +122,7 @@ class Scraper:
             except(IndexError, AttributeError):
                 job_dict[key] = None
         # scrape the tables
-        data = self.client.JOB_PAGE_TABLES
+        data = self.config.JOB_PAGE_TABLES
         for key in data.keys():
             try:
                 table = page_source.find(id=data[key])
@@ -183,7 +183,7 @@ class KaScraper(Scraper):
     """
 
     def __init__(self):
-        super().__init__(client=ConfigKA, parser=Parsers.KaParser)
+        super().__init__(config=ConfigKA, parser=Parsers.KaParser)
 
 
 class HsScraper(Scraper):
@@ -192,7 +192,7 @@ class HsScraper(Scraper):
     """
 
     def __init__(self):
-        super().__init__(client=ConfigHS, parser=Parsers.HsParser)
+        super().__init__(config=ConfigHS, parser=Parsers.HsParser)
 
     def __get_jobs__(self):
         """
@@ -203,9 +203,9 @@ class HsScraper(Scraper):
         # read html page data
         html = BeautifulSoup(self.driver.page_source, 'lxml')
         # find home visits_table
-        table = html.find('table', self.client.CONFIRMED_HOME_VISIT_TABLE)
+        table = html.find('table', self.config.CONFIRMED_HOME_VISIT_TABLE)
         # find all links pointing to job pages
-        links = table.find_all('a', href=re.compile(self.client.REGEXP["JOB_PAGE_LINK"]))
+        links = table.find_all('a', href=re.compile(self.config.REGEXP["JOB_PAGE_LINK"]))
         # loop though each job page and scrape the job details
         jobs = [self.__scrape_job__(link) for link in links]
         return jobs
@@ -219,7 +219,7 @@ class HsScraper(Scraper):
         job_dict = {}
         page_source = BeautifulSoup(self.driver.page_source, 'lxml')
         # scrape_site the tables
-        data = self.client.JOB_PAGE_TABLES
+        data = self.config.JOB_PAGE_TABLES
         for key in data.keys():
             try:
                 table = page_source.findAll(data[key])
