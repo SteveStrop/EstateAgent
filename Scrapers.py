@@ -203,9 +203,11 @@ class HsScraper(Scraper):
         # read html page data
         html = BeautifulSoup(self.driver.page_source, 'lxml')
         # find home visits_table
-        table = html.find('table', self.config.CONFIRMED_HOME_VISIT_TABLE)
-        # find all links pointing to job pages
-        links = table.find_all('a', href=re.compile(self.config.REGEXP["JOB_PAGE_LINK"]))
+        table = html.find("table", self.config.CONFIRMED_HOME_VISIT_TABLE)
+        rows = table.find_all("row")
+        # links = table.find_all("a", href=re.compile(self.config.REGEXP["JOB_PAGE_LINK"]))
+        # find all links pointing to open job pages (all links in rows where status is "Complete" are closed)
+        links = [row.find("a") for row in rows[1:] if row.find("span", self.config.JOB_OPEN)]  # headers in first row
         # loop though each job page and scrape the job details
         jobs = [self.__scrape_job__(link) for link in links]
         return jobs
@@ -214,23 +216,24 @@ class HsScraper(Scraper):
         """
         Read required data from ConfigHS.JOB_PAGE_TABLES.
         Scrape that data into a dict.
-        :return dict {ConfigXX.JOB_PAGE_TABLES[key] : scraped value}
+        :return dict {ConfigHS.JOB_PAGE_TABLES[key] : scraped value}
         """
         job_dict = {}
-        page_source = BeautifulSoup(self.driver.page_source, 'lxml')
-        # scrape_site the tables
+        # read html page data
+        html = BeautifulSoup(self.driver.page_source, 'lxml')
+        # scrape the tables
         data = self.config.JOB_PAGE_TABLES
         for key in data.keys():
             try:
-                table = page_source.findAll(data[key])
+                table = html.findAll(data[key])
                 job_dict[key] = table
             except (IndexError, AttributeError):
                 job_dict[key] = None
-        return job_dict
+        return job_dict  # just a copy of the job page table. All data extracted in the parser.
 
 
 if __name__ == '__main__':
     k = KaScraper()
     h = HsScraper()
-    k.scrape_site()
+    # k.scrape_site()
     h.scrape_site()

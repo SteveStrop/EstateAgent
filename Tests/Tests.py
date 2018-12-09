@@ -139,3 +139,6 @@ class TestHsParser(unittest.TestCase):
         self.assertEqual("37 Testy Road, Testtown, Bedfordshire", a.address.street)
         self.assertEqual("MK41 5DA", a.address.postcode)
         self.assertEqual("Sat 08 Dec @ 15:00", a.__str__())
+
+
+

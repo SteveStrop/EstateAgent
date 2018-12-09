@@ -106,5 +106,4 @@ venv.bak/
 .mypy_cache/
 
 /Tests/obj/
-/ConfigHS.py
-/ConfigKA.py
+/pw.py
