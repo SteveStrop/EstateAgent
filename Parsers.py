@@ -343,7 +343,7 @@ class HsParser(Parser):
         """
 
         # get the data and read it into a pandas table
-        df = pd.read_html(str(self.scraper_data["JOB_DATA_TABLE"]), index_col=0)
+        df = pd.read_html(str(self.scraper_data["JOB_DATA_TABLE"]), index_col=0) #todo change this to read_table
         self.table = pd.concat([pd.DataFrame(df[i]) for i in range(len(df))]).T  # Transpose the table
         self.job.client = self.client
         self.job.id = self.__set_id__()

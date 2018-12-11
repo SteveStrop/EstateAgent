@@ -1,11 +1,12 @@
 import pw
+
 """Configuration file containing complete specifications for accessing a config's webpage to enable
 scraping of job
 related data
 """
 # Environment variables-------------------------------------------------------------------------------------------------
 CHROME_DRIVER = "C:\Python36\selenium\webdriver\chrome\chromedriver.exe"
-TIME_FORMAT="%d/%m/%Y @ %H:%M"
+TIME_FORMAT = "%d/%m/%Y @ %H:%M"
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -30,12 +31,13 @@ LOGIN_BUTTON = "_submit"
 # -------------------------------------------------------------------------------------------------------------------- #
 
 REGEXP = {
-        "JOB_PAGE_LINK": "show",  # matches links on dashboard that point to jobs
-        "TIME_DAY":           r'(?:)(\d{2})(?:\/.*)',  # matches dd in dd/mm/yyyy @ HH:MM
-        "TIME_MONTH":         r'(?:\d{2}\/)(\d{2})',  # matches mm in dd/mm/yyyy @ HH:MM
-        "TIME_YEAR":              r'(?:.*\/)(\d{4})', # matches yyyy in dd/mm/yyyy @ HH:MM
-        "TIME_HOUR":              r'(?:.*@\D*)(\d{2})', # matches HH in dd/mm/yyyy @ HH:MM
-        "TIME_MIN":              r'(?:.*:)(\d{2})',# matches MM in dd/mm/yyyy @ HH:MM
+        "JOB_PAGE_LINK": "show",  # matches links on dashboard that point to jobsG:\Estate Agents
+
+        "TIME_DAY":      r'(?:)(\d{2})(?:\/.*)',  # matches dd in dd/mm/yyyy @ HH:MM
+        "TIME_MONTH":    r'(?:\d{2}\/)(\d{2})',  # matches mm in dd/mm/yyyy @ HH:MM
+        "TIME_YEAR":     r'(?:.*\/)(\d{4})',  # matches yyyy in dd/mm/yyyy @ HH:MM
+        "TIME_HOUR":     r'(?:.*@\D*)(\d{2})',  # matches HH in dd/mm/yyyy @ HH:MM
+        "TIME_MIN":      r'(?:.*:)(\d{2})',  # matches MM in dd/mm/yyyy @ HH:MM
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -90,5 +92,6 @@ UPLOAD_PAGE_BUTTONS = {
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 
-CONFIRMED_HOME_VISIT_TABLE = "sonata-home-visit-block-home-visit-container table table-condensed"
-JOB_OPEN="blah" # todo matches  CONFIRMED_HOME_VISIT_TABLE <span class="label--success" for open job
+CONFIRMED_HOME_VISIT_TABLE = "table"  # class="sonata-home-visit-block-home-visit-container table table-condensed"
+JOB_STATUS = "Status"  # column heading name for Job Status
+JOB_OPEN = "Confirmed"  # matches  CONFIRMED_HOME_VISIT_TABLE <span class="label--success" for open job

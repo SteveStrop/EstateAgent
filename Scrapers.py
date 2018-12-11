@@ -1,13 +1,13 @@
 import sys  # used when running pickle dumps
 import pickle
 import re
+import pandas as pd
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import ConfigKA
 import ConfigHS
 import Classes
 import Parsers
-
 
 class Scraper:
     """
@@ -195,21 +195,31 @@ class HsScraper(Scraper):
         super().__init__(config=ConfigHS, parser=Parsers.HsParser)
 
     def __get_jobs__(self):
+        # todo consider making this a standalone method. i.e. what would I need to pass in to make it
+        #  work on its own (i.e. html)
         """
-        Crawl a list of pages matching Config.REGEXP[job_page_link] that are in the CONFIRMED_HOME_VISIT_TABLE
-        Create a Job object for each page visited
+        Crawl a list of pages matching Config.REGEXP[job_page_link] that are in the CONFIRMED_HOME_VISIT_TABLE and have
+        a status indicating the job is live. i.e all jobs with a status of confirmed.
+        Create a Job object for each page visited.
         :return jobs : list [Job objects]
         """
         # read html page data
         html = BeautifulSoup(self.driver.page_source, 'lxml')
-        # find home visits_table
-        table = html.find("table", self.config.CONFIRMED_HOME_VISIT_TABLE)
-        rows = table.find_all("row")
-        # links = table.find_all("a", href=re.compile(self.config.REGEXP["JOB_PAGE_LINK"]))
-        # find all links pointing to open job pages (all links in rows where status is "Complete" are closed)
-        links = [row.find("a") for row in rows[1:] if row.find("span", self.config.JOB_OPEN)]  # headers in first row
-        # loop though each job page and scrape the job details
+        all_links = BeautifulSoup(self.driver.page_source, 'lxml').find_all('a', href=re.compile(
+                self.config.REGEXP["JOB_PAGE_LINK"]))
+        # get table - any live jobs found will be in the first table
+        table = html.find_all(ConfigHS.CONFIRMED_HOME_VISIT_TABLE)[0]
+
+        # convert to a pandas dataframe - we're only interested in the first element
+        # this is a table of addresses and job statuses etc.
+        df = pd.read_html(str(table), encoding='utf-8', header=0)[0]
+        # pandas will strip out the href data so we add it back in:
+        df["href"] = [tag for tag in table.find_all('a')]
+        # all live jobs have a status of "confirmed" so make a list of those [] = table headings
+        links = [row["href"] for _, row in df.iterrows() if row[ConfigHS.JOB_STATUS] == ConfigHS.JOB_OPEN]
+
         jobs = [self.__scrape_job__(link) for link in links]
+
         return jobs
 
     def __get_page_fields__(self):
