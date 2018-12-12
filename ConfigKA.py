@@ -41,11 +41,6 @@ REGEXP = {
         "PHONE_DAY":     r"(?:DAY:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*MOB)",  # matches Vendor DAY (main) phone no.
         "PHONE_EVE":     r"(?:EVE:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*Email)",  # matches Vendor EVE phone no.
         "PHOTO_COUNT":   r"(?:\D*)(\d+)\D*(?:photos)",  # matches number of photos required for job
-        "TIME_DAY":      r"(?:\D{4})(\d{2})",  # matches dd in ddd-dd mmm yy HHMM
-        "TIME_MONTH":    r"(?: )([JFMAMASOND]\w{2})",  # matches mmm in ddd-dd mmm yy HHMM
-        "TIME_YEAR":     r"(?: )(\d{2})(?: )",  # matches yy in ddd-dd mmm yy HHMM
-        "TIME_HOUR":     r"(?:\d{2} )(\d{2})",  # matches HH in ddd-dd mmm yy HHMM
-        "TIME_MIN":      r"(?:\d{2} \d{2})(\d{2})"  # matches MM in ddd-dd mmm yy HHMM
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #

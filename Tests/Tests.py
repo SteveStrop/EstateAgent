@@ -2,6 +2,7 @@ import pickle
 import unittest
 from Classes import *
 from Parsers import *
+from Scrapers import *
 
 # import test data
 with open('obj/' + "job_dict_hs" + '.pkl', 'rb') as f:
@@ -53,7 +54,7 @@ class TestClient(unittest.TestCase):
                 ('01908-501401', '01908 501 401'),
                 ('01908-501-401', '01908 501 401'),
                 ('0207 760 7600', '020 7760 7600')
-                ]
+        ]
         for tel in tels:
             self.assertEqual(tel[1], test_client.validate_tel(tel[0]))
 
@@ -141,4 +142,10 @@ class TestHsParser(unittest.TestCase):
         self.assertEqual("Sat 08 Dec @ 15:00", a.__str__())
 
 
-
+class TestScraper(unittest.TestCase):
+    def test__get_jobs__(self):
+        s = HsScraper()
+        with open("G:/EstateAgent/Tests/obj/HS_Confirmed_HomeVisits_table.html","r") as f:
+            html = BeautifulSoup(f,"lxml")
+        jobs = s.__get_jobs__(html)
+        print(jobs)

@@ -70,14 +70,17 @@ class Scraper:
         # return the selenium browser driver
         return driver
 
-    def __get_jobs__(self):
+    def __get_jobs__(self,html=None): #todo split into get links and get jobs
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link].
         Create a Job class object for each page visited
         :return jobs : list [Job objects]"""
 
+        # get html to read if none passed
+        if html is None:
+            html = BeautifulSoup(self.driver.page_source, 'lxml')
         # find all links pointing to job pages from the landing page
-        links = BeautifulSoup(self.driver.page_source, 'lxml').find_all('a', href=re.compile(
+        links = html.find_all('a', href=re.compile(
                 self.config.REGEXP["JOB_PAGE_LINK"]))
         # create list of scraped jobs
         jobs = [self.__scrape_job__(link) for link in links]
@@ -194,22 +197,19 @@ class HsScraper(Scraper):
     def __init__(self):
         super().__init__(config=ConfigHS, parser=Parsers.HsParser)
 
-    def __get_jobs__(self):
-        # todo consider making this a standalone method. i.e. what would I need to pass in to make it
-        #  work on its own (i.e. html)
+    def __get_jobs__(self,html=None):
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link] that are in the CONFIRMED_HOME_VISIT_TABLE and have
         a status indicating the job is live. i.e all jobs with a status of confirmed.
         Create a Job object for each page visited.
+        @param: html : beautiful soup object
         :return jobs : list [Job objects]
         """
-        # read html page data
-        html = BeautifulSoup(self.driver.page_source, 'lxml')
-        all_links = BeautifulSoup(self.driver.page_source, 'lxml').find_all('a', href=re.compile(
-                self.config.REGEXP["JOB_PAGE_LINK"]))
+        # get html to read if none passed
+        if html is None:
+            html = BeautifulSoup(self.driver.page_source, 'lxml')
         # get table - any live jobs found will be in the first table
         table = html.find_all(ConfigHS.CONFIRMED_HOME_VISIT_TABLE)[0]
-
         # convert to a pandas dataframe - we're only interested in the first element
         # this is a table of addresses and job statuses etc.
         df = pd.read_html(str(table), encoding='utf-8', header=0)[0]
@@ -245,5 +245,5 @@ class HsScraper(Scraper):
 if __name__ == '__main__':
     k = KaScraper()
     h = HsScraper()
-    # k.scrape_site()
+    k.scrape_site()
     h.scrape_site()
