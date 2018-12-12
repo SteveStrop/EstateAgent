@@ -142,11 +142,42 @@ class TestHsParser(unittest.TestCase):
         self.assertEqual("Sat 08 Dec @ 15:00", a.__str__())
 
 
-class TestScraper(unittest.TestCase):
+class TestHsScraper(unittest.TestCase):
+    s = HsScraper()
+
     def test__get_job_links__(self):
-        s = HsScraper()
-        test_link='<a href="https://www.housesimple.com/admin/home-visit-supplier/303133/show">'
-        with open("G:/EstateAgent/Tests/obj/HS_dashboard.html","r") as f:
-            html = BeautifulSoup(f,"lxml")
-        links = s.__get_job_links__(html)
-        self.assertIn(test_link,str(links[0]))
+        test_link = '<a href="https://www.housesimple.com/admin/home-visit-supplier/303133/show">'
+        with open("G:/EstateAgent/Tests/obj/HS_dashboard.html", "r") as f:
+            html = BeautifulSoup(f, "lxml")
+        links = TestHsScraper.s.__get_job_links__(html)
+        self.assertIn(test_link, str(links[0]))
+
+    def test__get_page_fields__(self):
+        test_string = "Northamptonshire, NN5 5DA"
+        with open("G:/EstateAgent/Tests/obj/HS_job_page.html", "r") as f:
+            html = BeautifulSoup(f, "lxml")
+        job_dict = TestHsScraper.s.__get_page_fields__(html)
+        self.assertIn(test_string, str(job_dict["JOB_DATA_TABLE"][0]))
+
+
+class TestKaScraper(unittest.TestCase):
+    s = KaScraper()
+
+    def test__get_job_links__(self):
+        test_link = "javascript:__doPostBack('ctl00$text$GridViewOutstandingCases','Select$0')"
+        with open("G:/EstateAgent/Tests/obj/KA_Welcome_page.html", "r") as f:
+            html = BeautifulSoup(f, "lxml")
+        links = TestKaScraper.s.__get_job_links__(html)
+        self.assertIn(test_link, str(links[0]))
+
+    def test__get_page_fields__(self):
+        agent_test = "H Brown of Connells  MOB:01908 563 993  TEL:01908 563 993  EVE:N/A"
+        date_test = "Fri-08 Feb 19 0000"
+        history_test = "THIS IS A PLACEHOLDER APPOINTMENT"
+
+        with open("G:/EstateAgent/Tests/obj/KA_job_page.html", "r") as f:
+            html = BeautifulSoup(f, "lxml")
+        job_dict = TestKaScraper.s.__get_page_fields__(html)
+        self.assertEqual(job_dict["JOB_DATA_AGENT"], agent_test)
+        self.assertEqual(job_dict["JOB_DATA_APPOINTMENT"], date_test)
+        self.assertIn(history_test, str(job_dict["JOB_DATA_HISTORY_TABLE"]))

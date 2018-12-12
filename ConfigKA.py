@@ -5,7 +5,6 @@ related data
 """
 # Environment variables-------------------------------------------------------------------------------------------------
 CHROME_DRIVER = "C:\Python36\selenium\webdriver\chrome\chromedriver.exe"
-TIME_FORMAT = "%a-%d %b %y %H%M"
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -14,8 +13,6 @@ TIME_FORMAT = "%a-%d %b %y %H%M"
 # -------------------------------------------------------------------------------------------------------------------- #
 
 CLIENT = "KeyAGENT"
-WELCOME_PAGE = \
-    "https://www.keyagent-portal.co.uk/Site/Dea/home.aspx?Dea=272ca14b-8535-453f-bf30-10e5c0318651&TAB=MYHOME"
 USERNAME = pw.USERNAME
 PASSWORD = pw.PASSWORD
 LOGIN_PAGE = "https://www.keyagent-portal.co.uk"
@@ -102,7 +99,7 @@ UPLOAD_PAGE_BUTTONS = {
 # --------------------------------------          CLIENT SPECIFIC            ----------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
-
+TIME_FORMAT = "%a-%d %b %y %H%M"
 UNWANTED_NOTES = [": NA", "Sample Selector:", "Agency Branch:", "AA Prestige"]
 JOB_PAGE_SITE_VISIT_ABBRS = {
         "Appointment date ammended":      "Changed ",

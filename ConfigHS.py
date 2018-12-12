@@ -6,8 +6,6 @@ related data
 """
 # Environment variables-------------------------------------------------------------------------------------------------
 CHROME_DRIVER = "C:\Python36\selenium\webdriver\chrome\chromedriver.exe"
-TIME_FORMAT = "%d/%m/%Y @ %H:%M"
-
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 # --------------------------------------          LOG ON DATA                ----------------------------------------- #
@@ -15,7 +13,6 @@ TIME_FORMAT = "%d/%m/%Y @ %H:%M"
 # -------------------------------------------------------------------------------------------------------------------- #
 
 CLIENT = "House Simple"
-WELCOME_PAGE = "https://www.housesimple.com/admin/dashboard"
 USERNAME = pw.USERNAME
 PASSWORD = pw.PASSWORD
 LOGIN_PAGE = "https://www.housesimple.com/admin/dashboard"
@@ -76,6 +73,7 @@ UPLOAD_PAGE_BUTTONS = {
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 
+TIME_FORMAT = "%d/%m/%Y @ %H:%M"
 CONFIRMED_HOME_VISIT_TABLE = "table"  # class="sonata-home-visit-block-home-visit-container table table-condensed"
 JOB_STATUS = "Status"  # column heading name for Job Status
 JOB_OPEN = "Confirmed"  # matches  CONFIRMED_HOME_VISIT_TABLE <span class="label--success" for open job

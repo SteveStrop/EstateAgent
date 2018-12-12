@@ -9,6 +9,7 @@ import ConfigHS
 import Classes
 import Parsers
 
+
 class Scraper:
     """
     Navigate to logon page as specified in ConfigXX file.
@@ -25,17 +26,16 @@ class Scraper:
         self.parser = parser
         self.config = config
         self.driver = None  # Selenium webdriver
-        self.jobs = None
 
     def scrape_site(self):
         """
-        Use Selenium to log on and scrape data from the config website.
+        Use Selenium to log on and scrape data from the website specified in ConfigfXX.
         :return: None
         """
         self.driver = self.__logon__()
         links = self.__get_job_links__()
-        self.jobs = self.__get_jobs__(links)
-        self.__process_jobs__()
+        jobs = self.__get_jobs__(links)
+        self.__process_jobs__(jobs)
         self.driver.quit()
 
     def __logon__(self):
@@ -83,16 +83,13 @@ class Scraper:
         # find all links pointing to job pages from the landing page
         return html.find_all('a', href=re.compile(self.config.REGEXP["JOB_PAGE_LINK"]))
 
-
-
-    def __get_jobs__(self,links):
+    def __get_jobs__(self, links):
         """
 
         :param links: list of html <a> tags containing href to page with details of a job
         :return list : Job objects, one for each link
         """
         return [self.__scrape_job__(link) for link in links]
-
 
     def __scrape_job__(self, link):
         """
@@ -115,20 +112,22 @@ class Scraper:
         self.driver.execute_script("window.history.go(-1)")
         return job
 
-    def __get_page_fields__(self):
+    def __get_page_fields__(self, html=None):
         """
         Read required data from ConfigXX.JOB_PAGE_DATA and ConfigXX.JOB_PAGE_TABLES.
         Scrape that data into a dict.
+        :param html the html page containing data to be scraped.
+        If None then Beautiful soup will parse the current Selenium webdriver.page source
         :return dict {ConfigXX.JOB_PAGE|DATA|TABLES[key] : scraped value}
         """
-
         job_dict = {}
-        page_source = BeautifulSoup(self.driver.page_source, 'lxml')
+        if html is None:
+            html = BeautifulSoup(self.driver.page_source, 'lxml')
         data = self.config.JOB_PAGE_DATA
         # scrape the text fields
         for key in data.keys():
             try:
-                value = page_source.find(id=data[key]).get_text()
+                value = html.find(id=data[key]).get_text()
                 job_dict[key] = value
             except(IndexError, AttributeError):
                 job_dict[key] = None
@@ -136,19 +135,19 @@ class Scraper:
         data = self.config.JOB_PAGE_TABLES
         for key in data.keys():
             try:
-                table = page_source.find(id=data[key])
+                table = html.find(id=data[key])
                 job_dict[key] = table
             except (IndexError, AttributeError):
                 job_dict[key] = None
         return job_dict
 
-    def __process_jobs__(self):
+    def __process_jobs__(self, jobs):
         """
         Placeholder for further processing.
         Will eventually store the jobs in a DB via Django.
         :return None
         """
-        for job in self.jobs:
+        for job in jobs:
             print(job, sep="\n")
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -226,8 +225,7 @@ class HsScraper(Scraper):
         # all live jobs have a status of "confirmed" so make a list of those [] = table headings
         return [row["href"] for _, row in df.iterrows() if row[ConfigHS.JOB_STATUS] == ConfigHS.JOB_OPEN]
 
-
-    def __get_page_fields__(self):
+    def __get_page_fields__(self, html=None):
         """
         Read required data from ConfigHS.JOB_PAGE_TABLES.
         Scrape that data into a dict.
@@ -235,7 +233,8 @@ class HsScraper(Scraper):
         """
         job_dict = {}
         # read html page data
-        html = BeautifulSoup(self.driver.page_source, 'lxml')
+        if html is None:
+            html = BeautifulSoup(self.driver.page_source, 'lxml')
         # scrape the tables
         data = self.config.JOB_PAGE_TABLES
         for key in data.keys():
