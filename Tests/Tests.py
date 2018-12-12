@@ -143,9 +143,10 @@ class TestHsParser(unittest.TestCase):
 
 
 class TestScraper(unittest.TestCase):
-    def test__get_jobs__(self):
+    def test__get_job_links__(self):
         s = HsScraper()
-        with open("G:/EstateAgent/Tests/obj/HS_Confirmed_HomeVisits_table.html","r") as f:
+        test_link='<a href="https://www.housesimple.com/admin/home-visit-supplier/303133/show">'
+        with open("G:/EstateAgent/Tests/obj/HS_dashboard.html","r") as f:
             html = BeautifulSoup(f,"lxml")
-        jobs = s.__get_jobs__(html)
-        print(jobs)
+        links = s.__get_job_links__(html)
+        self.assertIn(test_link,str(links[0]))

@@ -33,7 +33,8 @@ class Scraper:
         :return: None
         """
         self.driver = self.__logon__()
-        self.jobs = self.__get_jobs__()
+        links = self.__get_job_links__()
+        self.jobs = self.__get_jobs__(links)
         self.__process_jobs__()
         self.driver.quit()
 
@@ -70,21 +71,28 @@ class Scraper:
         # return the selenium browser driver
         return driver
 
-    def __get_jobs__(self,html=None): #todo split into get links and get jobs
+    def __get_job_links__(self, html=None):
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link].
         Create a Job class object for each page visited
-        :return jobs : list [Job objects]"""
+        :return list [<a> tags containing href to job pages]"""
 
         # get html to read if none passed
         if html is None:
             html = BeautifulSoup(self.driver.page_source, 'lxml')
         # find all links pointing to job pages from the landing page
-        links = html.find_all('a', href=re.compile(
-                self.config.REGEXP["JOB_PAGE_LINK"]))
-        # create list of scraped jobs
-        jobs = [self.__scrape_job__(link) for link in links]
-        return jobs
+        return html.find_all('a', href=re.compile(self.config.REGEXP["JOB_PAGE_LINK"]))
+
+
+
+    def __get_jobs__(self,links):
+        """
+
+        :param links: list of html <a> tags containing href to page with details of a job
+        :return list : Job objects, one for each link
+        """
+        return [self.__scrape_job__(link) for link in links]
+
 
     def __scrape_job__(self, link):
         """
@@ -197,7 +205,7 @@ class HsScraper(Scraper):
     def __init__(self):
         super().__init__(config=ConfigHS, parser=Parsers.HsParser)
 
-    def __get_jobs__(self,html=None):
+    def __get_job_links__(self, html=None):
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link] that are in the CONFIRMED_HOME_VISIT_TABLE and have
         a status indicating the job is live. i.e all jobs with a status of confirmed.
@@ -216,11 +224,8 @@ class HsScraper(Scraper):
         # pandas will strip out the href data so we add it back in:
         df["href"] = [tag for tag in table.find_all('a')]
         # all live jobs have a status of "confirmed" so make a list of those [] = table headings
-        links = [row["href"] for _, row in df.iterrows() if row[ConfigHS.JOB_STATUS] == ConfigHS.JOB_OPEN]
+        return [row["href"] for _, row in df.iterrows() if row[ConfigHS.JOB_STATUS] == ConfigHS.JOB_OPEN]
 
-        jobs = [self.__scrape_job__(link) for link in links]
-
-        return jobs
 
     def __get_page_fields__(self):
         """
