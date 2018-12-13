@@ -1,10 +1,10 @@
 import pw
-"""Configuration file containing complete specifications for accessing a config's webpage to enable
-scraping of job
-related data
+
+"""Configuration file containing complete specifications for accessing a client's webpage to enable
+scraping of job related data
 """
 # Environment variables-------------------------------------------------------------------------------------------------
-CHROME_DRIVER = "C:\Python36\selenium\webdriver\chrome\chromedriver.exe"
+CHROME_DRIVER = "C:/Python36/selenium/webdriver/chrome/chromedriver.exe"  # this should be the same for all configXX
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -32,7 +32,7 @@ REGEXP = {
         "JOB_PAGE_LINK": ".*Select.*",  # matches all links that point to job pages
         "AGENT":         r"(?:Agency Branch: )(.*)",  # matches Agent name after Agency Branch in notes.
         "VENDOR":        r"(?:)([ \w]*)(?: DAY)",  # matches Vendor name before DAY phone no.
-        "PHONE_1":        r"(?:TEL:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*EVE)",  # matches Agent TEL phone no.
+        "PHONE_1":       r"(?:TEL:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*EVE)",  # matches Agent TEL phone no.
         "VENDOR_MOB":    r"(?:MOB:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*EVE)",  # matches Vendor MOB phone no.
         "AGENT_MOB":     r"(?:MOB:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*TEL)",  # matches Agent MOB phone number
         "PHONE_DAY":     r"(?:DAY:)(\D*\d{3,12}\D*\d{1,4}\D*\d{1,4})(?:\D*MOB)",  # matches Vendor DAY (main) phone no.
@@ -46,6 +46,7 @@ REGEXP = {
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 
+# for data stored in html tags {name:html tag id}
 JOB_PAGE_DATA = {
         "JOB_DATA_AGENT":               "ctl00_main_LabelAgent",
         "JOB_DATA_VENDOR":              "ctl00_main_LabelVendor",
@@ -61,6 +62,7 @@ JOB_PAGE_DATA = {
         "JOB_DATA_APPOINTMENT_ADDRESS": "ctl00_text_LabelAddress",
         "JOB_DATA_ID":                  "ctl00_text_LabelHipref"
 }
+# for data stored in html tables {name: html table id}
 JOB_PAGE_TABLES = {
         "JOB_DATA_SPECIFIC_REQS_TABLE": "ctl00_main_GridViewPhotoLocation",
         "JOB_DATA_HISTORY_TABLE":       "ctl00_main_GridViewTaskNotes"
