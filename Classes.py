@@ -3,7 +3,7 @@ import re
 
 class Address:
     """
-    Store a UK address split into postcode and street parts
+    Store a UK address passed as postcode and street etc. parts
     """
     POSTCODE_REGEXP = r'[A-Z]{1,2}[\dR][\dA-Z]? [\d][A-Z]{2}'
 
@@ -26,9 +26,7 @@ class Address:
         try:
             postcode = postcode.upper()
             return re.fullmatch(Address.POSTCODE_REGEXP, postcode)[0]
-        except AttributeError:
-            return None
-        except TypeError:
+        except (AttributeError, TypeError):
             return None
 
     def __str__(self):
@@ -44,7 +42,7 @@ class Appointment:
     Store appointment date and time in 24h format
     """
 
-    TIME_FORMAT = "%a %d %b @ %H:%M"
+    TIME_FORMAT = "%a %d %b @ %H:%M"  # datetime formatting
 
     def __init__(self, address=Address(None), dtime=None):
         """
@@ -57,19 +55,20 @@ class Appointment:
 
     def __str__(self):
         """
-        String representation of Appointment object.
+        Display Appointment date / time  in 'Day dd Mmm @ hh:mm' format or 'TBA' if none set
         :return: string
         """
         try:
-            return self.date.strftime(Appointment.TIME_FORMAT)  # Day dd Mmm @ hh:mm
+            return self.date.strftime(Appointment.TIME_FORMAT)
         except (TypeError, AttributeError):
             return "TBA"
 
+
 class Client:
     """
-    Stores contact details.
+    Stores contact details for clients.
     Clients may have websites where they list details of jobs.
-    If they do, then each  has a Scraper, Parser, and ConfigXX file (XX denotes the config).
+    If so, then separate Scraper & Parser objects must be created along with a ConfigXX file (XX denotes the client).
     These allow parsing of the jobs into Job objects (defined below) for saving to the database.
     """
 
@@ -77,7 +76,7 @@ class Client:
         """
         :param name_1:  string
         :param name_2:  string
-        :param phone_1: string
+        :param phone_1:  string
         :param phone_2: string
         :param phone_3: string
         :param notes:   string
@@ -95,7 +94,8 @@ class Client:
         :param tel : string
         :return string or None"""
         try:
-            return self.__format_tel__(*self.__get_tel_format__(tel))
+            tel, tel_format = self.__get_tel_format__(tel)
+            return self.__format_tel__(tel, tel_format)
         except TypeError:
             return None
 
@@ -103,37 +103,38 @@ class Client:
     def __get_tel_format__(tel):
 
         """
-        Get the correct space-delimited format a UK phone number.
-        Return the digit only version of tel and it's valid UK phone number format
+        Strip out non digits from 'tel'
+        Get the correct space-delimited format for corresponding 'tel' or None if no match
+        Return digit only version of tel and it's corresponding format
         :param tel: string
         :return: string , string
         """
         tel_formats = [
-                ("01### ##### ", "01\d{8}"),
-                ("01### ### ###", "01\d{9}"),
-                ("011# ### ####", "011\d{8}"),
-                ("01#1 ### ####", "01\d1\d{7}"),
-                ("013397 #####", "013397\d{5}"),
-                ("013398 #####", "013398\d{5}"),
-                ("013873 #####", "013873\d{5}"),
-                ("015242 #####", "015242\d{5}"),
-                ("015394 #####", "015394\d{5}"),
-                ("015395 #####", "015395\d{5}"),
-                ("015396 #####", "015396\d{5}"),
-                ("016973 #####", "016973\d{5}"),
-                ("016974 #####", "016974\d{5}"),
-                ("016977 #### ", "016977\d{4}"),
-                ("016977 #####", "016977\d{5}"),
-                ("017683 #####", "017683\d{5}"),
-                ("017684 #####", "017684\d{5}"),
-                ("017687 #####", "017687\d{5}"),
-                ("019467 #####", "019467\d{5}"),
-                ("019755 #####", "019755\d{5}"),
-                ("019756 #####", "019756\d{5}"),
-                ("02# #### ####", "02\d{9}"),
-                ("03## ### ####", "03\d{9}"),
-                ("05### ### ###", "05\d{9}"),
-                ("07### ### ###", "07\d{9}")
+            ("01### ##### ", "01\d{8}"),
+            ("01### ### ###", "01\d{9}"),
+            ("011# ### ####", "011\d{8}"),
+            ("01#1 ### ####", "01\d1\d{7}"),
+            ("013397 #####", "013397\d{5}"),
+            ("013398 #####", "013398\d{5}"),
+            ("013873 #####", "013873\d{5}"),
+            ("015242 #####", "015242\d{5}"),
+            ("015394 #####", "015394\d{5}"),
+            ("015395 #####", "015395\d{5}"),
+            ("015396 #####", "015396\d{5}"),
+            ("016973 #####", "016973\d{5}"),
+            ("016974 #####", "016974\d{5}"),
+            ("016977 #### ", "016977\d{4}"),
+            ("016977 #####", "016977\d{5}"),
+            ("017683 #####", "017683\d{5}"),
+            ("017684 #####", "017684\d{5}"),
+            ("017687 #####", "017687\d{5}"),
+            ("019467 #####", "019467\d{5}"),
+            ("019755 #####", "019755\d{5}"),
+            ("019756 #####", "019756\d{5}"),
+            ("02# #### ####", "02\d{9}"),
+            ("03## ### ####", "03\d{9}"),
+            ("05### ### ###", "05\d{9}"),
+            ("07### ### ###", "07\d{9}")
         ]
 
         try:
@@ -142,6 +143,7 @@ class Client:
             return None
         # strip non digits
         tel = "".join([n for n in tel if n.isdigit()])
+
         tel_format = None
         # compare regexp in tel_formats with tel
         for fmt, regexp in tel_formats:  # search them all because the last match is the one we want
@@ -167,25 +169,26 @@ class Client:
             return None  # not a valid UK phone number
         # cast phone to a list
         phone = list(phone)
-        # build correctly formatted phone by popping first element if matching template character is non blank and
+        # build correctly formatted phone by popping first element if matching template character is non blank
         # strip any whitespace
         return "".join([phone.pop(0) if c != " " else " " for c in template]).strip()
 
     def __str__(self):
-        name1 =  f"Primary contact:   {self.name_1:30.40}" if self.name_1 else ""
+        name1 = f"Primary contact:   {self.name_1:30.40}" if self.name_1 else ""
         phone1 = f"Tel: {self.phone_1:>13.13}" if self.phone_1 else ""
-        name2 =  f"\nSecondary contact: {self.name_2:30.40}" if self.name_2 else ""
+        name2 = f"\nSecondary contact: {self.name_2:30.40}" if self.name_2 else ""
         phone2 = f"Tel: {self.phone_2:>13.13}" if self.phone_2 else ""
-        name3  = f"\nOther contact:     {' ':30.40}" if self.phone_3 else ""
+        name3 = f"\nOther contact:     {' ':30.40}" if self.phone_3 else ""
         phone3 = f"Tel: {self.phone_3:>13.13}" if self.phone_3 else ""
 
         return f"{name1} {phone1}" \
-            f"{name2} {phone2}" \
-            f"{name3} {phone3}"
+               f"{name2} {phone2}" \
+               f"{name3} {phone3}"
 
 
 class Agent(Client):
-    def __init__(self, name_1=None, name_2=None, phone_1=None, phone_2=None, phone_3=None, notes=None, address=None,branch=None):
+    def __init__(self, name_1=None, name_2=None, phone_1=None, phone_2=None, phone_3=None, notes=None, address=None,
+                 branch=None):
         """
         :param name_1: string
         :param name_2: string
@@ -204,7 +207,6 @@ class Agent(Client):
         branch = f"Branch:\n{self.branch}" if self.branch else ""
         address = f"\nAddress:\n{self.address}" if self.address else ""
         return branch + super().__str__() + address
-
 
 
 class Job:
@@ -291,16 +293,16 @@ class Job:
 
         return \
             f"ID:\n{self.id}\n" \
-                f"CLIENT:\n{self.client}\n" \
-                f"AGENT:\n{self.agent}\n" \
-                f"VENDOR:\n{self.vendor}\n" \
-                f"APPOINTMENT:\n{self.appointment}\n" \
-                f"ADDRESS:\n{self.appointment.address}\n" \
-                f"PROPERTY:\n{self.property_type}\n" \
-                f"BEDS:\n{self.beds}\n" \
-                f"FOLDER:\n{self.folder}\n" \
-                f"NOTES:\n{notes}\n" \
-                f"FLOORPLAN:\n{'Yes' if self.floorplan else 'No'}\n" \
-                f"PHOTOS:\n{self.photos}\n" \
-                f"SPECIFICS:\n{specifics}\n" \
-                f"SYSTEM NOTES:\n{system_notes}"
+            f"CLIENT:\n{self.client}\n" \
+            f"AGENT:\n{self.agent}\n" \
+            f"VENDOR:\n{self.vendor}\n" \
+            f"APPOINTMENT:\n{self.appointment}\n" \
+            f"ADDRESS:\n{self.appointment.address}\n" \
+            f"PROPERTY:\n{self.property_type}\n" \
+            f"BEDS:\n{self.beds}\n" \
+            f"FOLDER:\n{self.folder}\n" \
+            f"NOTES:\n{notes}\n" \
+            f"FLOORPLAN:\n{'Yes' if self.floorplan else 'No'}\n" \
+            f"PHOTOS:\n{self.photos}\n" \
+            f"SPECIFICS:\n{specifics}\n" \
+            f"SYSTEM NOTES:\n{system_notes}"
