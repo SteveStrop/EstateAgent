@@ -1,5 +1,4 @@
 import re
-import datetime as dt
 
 
 class Address:
@@ -37,7 +36,7 @@ class Address:
         String representation of Address object.
         :return: string
         """
-        return f"{self.street if self.street else ''}, {self.postcode if self.postcode else ''}"
+        return f"{self.street}, {self.postcode}" if self.street else ""
 
 
 class Appointment:
@@ -149,12 +148,8 @@ class Client:
             try:
                 tel = re.fullmatch(regexp, tel)[0]
                 tel_format = fmt
-                # print(f"found a match for {tel} as {tel_format}")
-                # input("Continue?")
             except (TypeError, AttributeError):
-                pass  # loop if no match
-        # print(f"returning {tel_format} as a match")
-        # input("Continue?")
+                continue  # loop if no match
         return tel, tel_format
 
     @staticmethod
