@@ -4,14 +4,19 @@ from Classes import *
 from Parsers import *
 from Scrapers import *
 
-# import test data
-with open('obj/' + "job_dict_hs" + '.pkl', 'rb') as f:
-    JOB_DICT_HS = pickle.load(f)
-    # print(JOB_DICT_HS)
 
-with open('obj/' + "job_dict_ka" + '.pkl', 'rb') as f:
-    JOB_DICT_KA = pickle.load(f)
-    # print(JOB_DICT_KA)
+def import_test_data():
+    # import test data
+    with open('obj/' + "job_dict_hs" + '.pkl', 'rb') as f:
+        hs = pickle.load(f)
+        # print(hs)
+    with open('obj/' + "job_dict_ka" + '.pkl', 'rb') as f:
+        ka = pickle.load(f)
+        # print(ka)
+        return hs, ka
+
+
+JOB_DICT_HS, JOB_DICT_KA = import_test_data()
 
 
 class TestAddress(unittest.TestCase):

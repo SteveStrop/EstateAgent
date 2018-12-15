@@ -24,7 +24,7 @@ class Address:
         :return string : valid uppercase postcode or None
         """
         try:
-            postcode = postcode.upper()
+            postcode = postcode.upper()  # catches non string postcodes as well
             return re.fullmatch(Address.POSTCODE_REGEXP, postcode)[0]
         except (AttributeError, TypeError):
             return None
@@ -42,7 +42,7 @@ class Appointment:
     Store appointment date and time in 24h format
     """
 
-    TIME_FORMAT = "%a %d %b @ %H:%M"  # datetime formatting
+    TIME_FORMAT = "%a %d %b @ %H:%M"  # datetime formatting Ddd dd Mmm @ HH:MM
 
     def __init__(self, address=Address(None), dtime=None):
         """
@@ -94,8 +94,8 @@ class Client:
         :param tel : string
         :return string or None"""
         try:
-            tel, tel_format = self.__get_tel_format__(tel)
-            return self.__format_tel__(tel, tel_format)
+            tel_digits, tel_format = self.__get_tel_format__(tel)
+            return self.__format_tel__(tel_digits, tel_format)
         except TypeError:
             return None
 
@@ -110,39 +110,38 @@ class Client:
         :return: string , string
         """
         tel_formats = [
-            ("01### ##### ", "01\d{8}"),
-            ("01### ### ###", "01\d{9}"),
-            ("011# ### ####", "011\d{8}"),
-            ("01#1 ### ####", "01\d1\d{7}"),
-            ("013397 #####", "013397\d{5}"),
-            ("013398 #####", "013398\d{5}"),
-            ("013873 #####", "013873\d{5}"),
-            ("015242 #####", "015242\d{5}"),
-            ("015394 #####", "015394\d{5}"),
-            ("015395 #####", "015395\d{5}"),
-            ("015396 #####", "015396\d{5}"),
-            ("016973 #####", "016973\d{5}"),
-            ("016974 #####", "016974\d{5}"),
-            ("016977 #### ", "016977\d{4}"),
-            ("016977 #####", "016977\d{5}"),
-            ("017683 #####", "017683\d{5}"),
-            ("017684 #####", "017684\d{5}"),
-            ("017687 #####", "017687\d{5}"),
-            ("019467 #####", "019467\d{5}"),
-            ("019755 #####", "019755\d{5}"),
-            ("019756 #####", "019756\d{5}"),
-            ("02# #### ####", "02\d{9}"),
-            ("03## ### ####", "03\d{9}"),
-            ("05### ### ###", "05\d{9}"),
-            ("07### ### ###", "07\d{9}")
+                ("01### ##### ", "01\d{8}"),
+                ("01### ### ###", "01\d{9}"),
+                ("011# ### ####", "011\d{8}"),
+                ("01#1 ### ####", "01\d1\d{7}"),
+                ("013397 #####", "013397\d{5}"),
+                ("013398 #####", "013398\d{5}"),
+                ("013873 #####", "013873\d{5}"),
+                ("015242 #####", "015242\d{5}"),
+                ("015394 #####", "015394\d{5}"),
+                ("015395 #####", "015395\d{5}"),
+                ("015396 #####", "015396\d{5}"),
+                ("016973 #####", "016973\d{5}"),
+                ("016974 #####", "016974\d{5}"),
+                ("016977 #### ", "016977\d{4}"),
+                ("016977 #####", "016977\d{5}"),
+                ("017683 #####", "017683\d{5}"),
+                ("017684 #####", "017684\d{5}"),
+                ("017687 #####", "017687\d{5}"),
+                ("019467 #####", "019467\d{5}"),
+                ("019755 #####", "019755\d{5}"),
+                ("019756 #####", "019756\d{5}"),
+                ("02# #### ####", "02\d{9}"),
+                ("03## ### ####", "03\d{9}"),
+                ("05### ### ###", "05\d{9}"),
+                ("07### ### ###", "07\d{9}")
         ]
 
         try:
-            assert isinstance(tel, str)
-        except AssertionError:
+            # strip non digits
+            tel = "".join([n for n in tel if n.isdigit()])
+        except TypeError:
             return None
-        # strip non digits
-        tel = "".join([n for n in tel if n.isdigit()])
 
         tel_format = None
         # compare regexp in tel_formats with tel
@@ -169,7 +168,7 @@ class Client:
             return None  # not a valid UK phone number
         # cast phone to a list
         phone = list(phone)
-        # build correctly formatted phone by popping first element if matching template character is non blank
+        # build correctly formatted phone by popping first select_drop if matching template character is non blank
         # strip any whitespace
         return "".join([phone.pop(0) if c != " " else " " for c in template]).strip()
 
@@ -182,8 +181,8 @@ class Client:
         phone3 = f"Tel: {self.phone_3:>13.13}" if self.phone_3 else ""
 
         return f"{name1} {phone1}" \
-               f"{name2} {phone2}" \
-               f"{name3} {phone3}"
+            f"{name2} {phone2}" \
+            f"{name3} {phone3}"
 
 
 class Agent(Client):
@@ -293,16 +292,16 @@ class Job:
 
         return \
             f"ID:\n{self.id}\n" \
-            f"CLIENT:\n{self.client}\n" \
-            f"AGENT:\n{self.agent}\n" \
-            f"VENDOR:\n{self.vendor}\n" \
-            f"APPOINTMENT:\n{self.appointment}\n" \
-            f"ADDRESS:\n{self.appointment.address}\n" \
-            f"PROPERTY:\n{self.property_type}\n" \
-            f"BEDS:\n{self.beds}\n" \
-            f"FOLDER:\n{self.folder}\n" \
-            f"NOTES:\n{notes}\n" \
-            f"FLOORPLAN:\n{'Yes' if self.floorplan else 'No'}\n" \
-            f"PHOTOS:\n{self.photos}\n" \
-            f"SPECIFICS:\n{specifics}\n" \
-            f"SYSTEM NOTES:\n{system_notes}"
+                f"CLIENT:\n{self.client}\n" \
+                f"AGENT:\n{self.agent}\n" \
+                f"VENDOR:\n{self.vendor}\n" \
+                f"APPOINTMENT:\n{self.appointment}\n" \
+                f"ADDRESS:\n{self.appointment.address}\n" \
+                f"PROPERTY:\n{self.property_type}\n" \
+                f"BEDS:\n{self.beds}\n" \
+                f"FOLDER:\n{self.folder}\n" \
+                f"NOTES:\n{notes}\n" \
+                f"FLOORPLAN:\n{'Yes' if self.floorplan else 'No'}\n" \
+                f"PHOTOS:\n{self.photos}\n" \
+                f"SPECIFICS:\n{specifics}\n" \
+                f"SYSTEM NOTES:\n{system_notes}"

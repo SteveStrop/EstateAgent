@@ -32,28 +32,35 @@ class Scraper:
         Use Selenium to log on and scrape data from the website specified in ConfigfXX.
         :return: None
         """
+        # logon and get a driver instance
         self.driver = self.__logon__()
+        # get list of links to jobs
         links = self.__get_job_links__()
+        # parse the linked pages into Job instances
         jobs = self.__get_jobs__(links)
         self.__process_jobs__(jobs)
         self.driver.quit()
 
-    def __logon__(self):
+    def __logon__(self,landing_pg=None):
         """
         Logon to a web site using credentials and web addresses from ConfigXX
         :return Selenium webdriver
         """
         # create a selenium browser driver
         driver = webdriver.Chrome(self.config.CHROME_DRIVER)
+        driver.implicitly_wait(10)  # wait for up to 10 secs
 
         # read credential and addresses
         username = self.config.USERNAME
         password = self.config.PASSWORD
         login_pg = self.config.LOGIN_PAGE
-        landing_pg = self.config.LANDING_PAGE
         username_field = self.config.USERNAME_FIELD
         password_field = self.config.PASSWORD_FIELD
         login_btn = self.config.LOGIN_BUTTON
+
+        # set landing page
+        if landing_pg is None:
+            landing_pg = self.config.LANDING_PAGE
 
         # Navigate to the config home page
         driver.get(login_pg)
@@ -141,7 +148,8 @@ class Scraper:
                 job_dict[key] = None
         return job_dict
 
-    def __process_jobs__(self, jobs):
+    @staticmethod
+    def __process_jobs__(jobs):
         """
         Placeholder for further processing.
         Will eventually store the jobs in a DB via Django.
@@ -217,7 +225,7 @@ class HsScraper(Scraper):
             html = BeautifulSoup(self.driver.page_source, 'lxml')
         # get table - any live jobs found will be in the first table
         table = html.find_all(ConfigHS.CONFIRMED_HOME_VISIT_TABLE)[0]
-        # convert to a pandas dataframe - we're only interested in the first element
+        # convert to a pandas dataframe - we're only interested in the first select_drop
         # this is a table of addresses and job statuses etc.
         df = pd.read_html(str(table), encoding='utf-8', header=0)[0]
         # pandas will strip out the href data so we add it back in:

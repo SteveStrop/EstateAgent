@@ -116,3 +116,18 @@ JOB_PAGE_SITE_VISIT_ABBRS = {
         "I will call again":              " will try again",
         "Changed at Vendors request":     ""
 }
+CHANGE_APPT_BUTTONS = {
+        "CHANGE_SELECT":         "ctl00_main_DropDownListAppointmentChangedReasons",
+        "CHANGE_SELECT_OPTIONS": {
+                "AGENT_REQ":     "Changed at Agents request",
+                "VENDOR_REQ":    "Changed at Vendors request",
+                "NO_ACCESS":     "Attended property, no access",
+                "WEATHER":       "Change due to weather",
+                "DOUBLE_BOOKED": "Double booked", "OTHER": "I was unable to attend because",
+        },
+        "CHANGE_TEXT_BOX":       "ctl00_main_textboxAppointmentChangeReason",
+        "CHANGE_APPT_DATE":"ctl00_main_txtNewChangedAppointmentDate",
+        "CHANGE_APPT_TIME":"ctl00_main_txtNewChangedAppointmentTime",
+        "CHANGE_SAVE":"ctl00_main_ButtonShareAppointmentChange",
+        "CHANGE_CANCEL":"ctl00_main_ButtonCancelAppointmentChange"
+}
