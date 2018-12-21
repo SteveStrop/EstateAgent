@@ -185,6 +185,11 @@ class Client:
             f"{name3} {phone3}"
 
 
+class Vendor(Client):
+    def __init__(self, name_1=None, name_2=None, phone_1=None, phone_2=None, phone_3=None, notes=None):
+        super().__init__(name_1, name_2, phone_1, phone_2, phone_3, notes)
+        
+
 class Agent(Client):
     def __init__(self, name_1=None, name_2=None, phone_1=None, phone_2=None, phone_3=None, notes=None, address=None,
                  branch=None):

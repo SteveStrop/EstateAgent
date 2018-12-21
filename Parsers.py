@@ -211,7 +211,7 @@ class KaParser(Parser):
         tel = self.parse(self.config.REGEXP["PHONE_DAY"], vendor)
         mob = self.parse(self.config.REGEXP["VENDOR_MOB"], vendor)
         eve = self.parse(self.config.REGEXP["PHONE_EVE"], vendor)
-        return Classes.Client(name_1=vendor_name, phone_1=tel, phone_2=mob, phone_3=eve)
+        return Classes.Vendor(name_1=vendor_name, phone_1=tel, phone_2=mob, phone_3=eve)
 
     def __set_property_type__(self):
         """
