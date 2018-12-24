@@ -34,56 +34,56 @@ class Parser:
         """
         return NotImplementedError
 
-    def __set_id__(self):
+    def _extract_id(self):
         """
         Parse unique ID for job
         :return string
         """
         return NotImplementedError
 
-    def __set_agent__(self):
+    def _extract_agent(self):
         """
         Parse agent name and branch.
         :return string
         """
         return NotImplementedError
 
-    def __set_vendor__(self):
+    def _extract_vendor(self):
         """
         Parse vendor name and three telephone numbers if present.
         :return Client object
         """
         return NotImplementedError
 
-    def __set_property_type__(self):
+    def _extract_property_type(self):
         """
         Parse property type.
         :return string
         """
         return NotImplementedError
 
-    def __set_beds__(self):
+    def _extract_beds(self):
         """
         Parse number of bedrooms.
         :return string
         """
         return NotImplementedError
 
-    def __set_floorplan__(self):
+    def _extract_floorplan(self):
         """
         Parse floorplan requirements.
         :return boolean True if floorplan needed else False
         """
         return NotImplementedError
 
-    def __set_photos__(self):
+    def _extract_photos(self):
         """
         Parse photos quantity required.
         :return int
         """
         return NotImplementedError
 
-    def __set_notes__(self):
+    def _extract_notes(self):
         """
         Parse and summarise notes.
         :return list
@@ -97,6 +97,24 @@ class Parser:
          """
         appt = Classes.Appointment(self.address, self.time)
         return appt
+
+    def _extract_address(self):
+
+        """
+        Extract address field from scraper_data and send it to base Parser.set_address().
+        :return Address object
+        """
+        return NotImplementedError
+
+    def _extract_time(self):
+        """
+        Extract date & time field from scraper_data.
+        Define Datetime format for that data and send these to base Parser.set_time().
+        :return Datetime object
+        """
+        return NotImplementedError
+
+
 
     @staticmethod
     def set_time(time, time_format):
@@ -163,29 +181,29 @@ class KaParser(Parser):
         :return None
         """
         self.job.client = self.client
-        self.job.id = self.__set_id__()
-        self.job.agent = self.__set_agent__()
-        self.job.vendor = self.__set_vendor__()
-        self.time = self.__set_time__()
-        self.address = self.__set_address__()
+        self.job.id = self._extract_id()
+        self.job.agent = self._extract_agent()
+        self.job.vendor = self._extract_vendor()
+        self.time = self._extract_time()
+        self.address = self._extract_address()
         self.job.appointment = self.set_appointment()
-        self.job.property_type = self.__set_property_type__()
-        self.job.beds = self.__set_beds__()
-        self.job.floorplan = self.__set_floorplan__()
-        self.job.photos = self.__set_photos__()
-        self.job.notes = self.__set_notes__()
-        self.job.specific_reqs = self.__set_specific_reqs__()
-        self.job.system_notes = self.__set_system_notes__()
+        self.job.property_type = self._extract_property_type()
+        self.job.beds = self._extract_beds()
+        self.job.floorplan = self._extract_floorplan()
+        self.job.photos = self._extract_photos()
+        self.job.notes = self._extract_notes()
+        self.job.specific_reqs = self._extract_specific_reqs()
+        self.job.system_notes = self._extract_system_notes()
         self.job.status = Classes.Job.ACTIVE
 
-    def __set_id__(self):
+    def _extract_id(self):
         """
         Parse unique ID for job
         :return string
         """
         return self.scraper_data["JOB_DATA_ID"]
 
-    def __set_agent__(self):
+    def _extract_agent(self):
         """
         Parse agent name and branch.
         :return string
@@ -201,7 +219,7 @@ class KaParser(Parser):
         eve = self.parse(self.config.REGEXP["PHONE_EVE"], agent)
         return Classes.Agent(branch=agent_name, phone_1=tel, phone_2=mob, phone_3=eve)
 
-    def __set_vendor__(self):
+    def _extract_vendor(self):
         """
         Parse vendor name and three telephone numbers if present.
         :return Vendor object
@@ -213,28 +231,28 @@ class KaParser(Parser):
         eve = self.parse(self.config.REGEXP["PHONE_EVE"], vendor)
         return Classes.Vendor(name_1=vendor_name, phone_1=tel, phone_2=mob, phone_3=eve)
 
-    def __set_property_type__(self):
+    def _extract_property_type(self):
         """
         Parse property type.
         :return string
         """
         return self.scraper_data["JOB_DATA_PROPERTY_TYPE"]
 
-    def __set_beds__(self):
+    def _extract_beds(self):
         """
         Parse number of bedrooms.
         :return string
         """
         return self.scraper_data["JOB_DATA_BEDS"]
 
-    def __set_floorplan__(self):
+    def _extract_floorplan(self):
         """
         Parse floorplan requirements.
         :return boolean True if floorplan needed else False
         """
         return self.scraper_data["JOB_DATA_FLOORPLAN"].strip().upper().startswith("YES")
 
-    def __set_photos__(self):
+    def _extract_photos(self):
         """
         Parse photos quantity required.
         :return int
@@ -245,7 +263,7 @@ class KaParser(Parser):
         except ValueError:
             return 0
 
-    def __set_notes__(self):
+    def _extract_notes(self):
         """
         Parse and summarise notes.
         :return list
@@ -266,7 +284,7 @@ class KaParser(Parser):
             pass
         return notes
 
-    def __set_address__(self):
+    def _extract_address(self):
         """
         Extract address field from scraper_data and send it to base Parser.set_address().
         :return Address object
@@ -274,7 +292,7 @@ class KaParser(Parser):
         address = self.scraper_data["JOB_DATA_APPOINTMENT_ADDRESS"]
         return self.set_address(address)
 
-    def __set_time__(self):
+    def _extract_time(self):
         """
         Extract date & time field from scraper_data.
         Define Datetime format for that data and send these to base Parser.set_time().
@@ -286,7 +304,7 @@ class KaParser(Parser):
 
     # Client specific methods
 
-    def __set_specific_reqs__(self):
+    def _extract_specific_reqs(self):
         """
         Parse the specific requirements table.
         Currently this is only used for streetscape but it could be expanded to cover any specific photo requirements.
@@ -301,7 +319,7 @@ class KaParser(Parser):
         # read the table into a dict and return it
         return {row['Specific Requirement']: row['Files required'] for _, row in df.iterrows()}
 
-    def __set_system_notes__(self):
+    def _extract_system_notes(self):
         """
         Parse job history.
         Abbreviate jargon using Config.JOB_PAGE_SITE_VISIT_ABBRS
@@ -346,18 +364,18 @@ class HsParser(Parser):
         df = pd.read_html(str(self.scraper_data["JOB_DATA_TABLE"]), index_col=0)
         self.table = pd.concat([pd.DataFrame(df[i]) for i in range(len(df))]).T  # Transpose the table
         self.job.client = self.client
-        self.job.id = self.__set_id__()
-        self.job.vendor = self.__set_vendor__()
-        self.time = self.__set_time__()
-        self.address = self.__set_address__()
+        self.job.id = self._extract_id()
+        self.job.vendor = self._extract_vendor()
+        self.time = self._extract_time()
+        self.address = self._extract_address()
         self.job.appointment = self.set_appointment()
-        self.job.property_type = self.__set_property_type__()
-        self.job.beds = self.__set_beds__()
+        self.job.property_type = self._extract_property_type()
+        self.job.beds = self._extract_beds()
         self.job.floorplan = True
         self.job.photos = 10
         self.job.status = Classes.Job.ACTIVE
 
-    def __set_id__(self):
+    def _extract_id(self):
         """
         Parse unique job ID
         :return string
@@ -369,7 +387,7 @@ class HsParser(Parser):
             id_ = None
         return id_
 
-    def __set_vendor__(self):
+    def _extract_vendor(self):
         """
         Parse vendor name only.
         No vendor phone numbers on House Simple job page.
@@ -381,7 +399,7 @@ class HsParser(Parser):
             vendor = None
         return Classes.Client(name_1=vendor)
 
-    def __set_property_type__(self):
+    def _extract_property_type(self):
         """
         Parse property type.
         :return string
@@ -393,7 +411,7 @@ class HsParser(Parser):
             p_type = None
         return p_type
 
-    def __set_beds__(self):
+    def _extract_beds(self):
         """
         Parse number of bedrooms.
         :return string
@@ -405,7 +423,7 @@ class HsParser(Parser):
             beds = None
         return beds
 
-    def __set_address__(self):
+    def _extract_address(self):
         """
         Extract address field from scraper_data and send it to base Parser.set_address().
         :return Address object
@@ -413,7 +431,7 @@ class HsParser(Parser):
         address = self.table[ConfigHS.JOB_PAGE_DATA["ADDRESS"]].values[0].strip()
         return self.set_address(address)
 
-    def __set_time__(self):
+    def _extract_time(self):
         """
         Extract date & time field from scraper_data.
         Define Datetime format for that data and send these to base Parser.set_time().

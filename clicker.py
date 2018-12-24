@@ -45,7 +45,7 @@ def change_appt(new_appt, reason=None):
 # driver.get("file:///G:/EstateAgent/Tests/obj/ChangeApptPopUp.html")
 
 s = Scrapers.KaScraper()
-driver = s.__logon__(
+driver = s._logon(
         landing_pg="https://www.keyagent-portal.co.uk/Site/Dea/Dea.aspx?DEA=272ca14b-8535-453f-bf30-10e5c0318651&Quote"
                    "=8972d072-238a-4b2a-aaea-5dd7c8a53892&Logged=True")
 driver.implicitly_wait(30)

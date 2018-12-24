@@ -69,50 +69,50 @@ class TestKaParser(unittest.TestCase):
     test_parser.map_job()
 
     def test_set_id(self):
-        i = TestKaParser.test_parser.__set_id__()
+        i = TestKaParser.test_parser._extract_id()
         self.assertEqual("1000623765", i)
 
     def test_set_agent(self):
-        a = TestKaParser.test_parser.__set_agent__()
+        a = TestKaParser.test_parser._extract_agent()
         self.assertEqual("Connells - Stony Stratford", a.branch)
         self.assertEqual("01908 222 343", a.phone_1)
         self.assertEqual("01908 111 999", a.phone_2)
 
     def test_set_vendor(self):
-        v = TestKaParser.test_parser.__set_vendor__()
+        v = TestKaParser.test_parser._extract_vendor()
         self.assertEqual("Mrs Sue Blogs", v.name_1)
         self.assertEqual("07891 123 211", v.phone_1)
         self.assertEqual(None, v.phone_2)
         self.assertEqual("07991 332 456", v.phone_3)
 
     def test_set_property_type(self):
-        p = TestKaParser.test_parser.__set_property_type__()
+        p = TestKaParser.test_parser._extract_property_type()
         self.assertEqual("House", p)
 
     def test_set_beds(self):
-        b = TestKaParser.test_parser.__set_beds__()
+        b = TestKaParser.test_parser._extract_beds()
         self.assertEqual("3", b)
 
     def test_set_floorplan(self):
-        f = TestKaParser.test_parser.__set_floorplan__()
+        f = TestKaParser.test_parser._extract_floorplan()
         self.assertEqual(True, f)
 
     def test_set_photos(self):
-        p = TestKaParser.test_parser.__set_photos__()
+        p = TestKaParser.test_parser._extract_photos()
         self.assertEqual(p, 20)
 
     def test_set_notes(self):
-        n = TestKaParser.test_parser.__set_notes__()
+        n = TestKaParser.test_parser._extract_notes()
         self.assertIn("Agency Preferences: Nice photos only please", n[0])
         self.assertIn("General Notes: Take every angle.", n[1])
         self.assertIn("Please get shots of the approach", n[2])
 
     def test_set_specific_reqs(self):
-        s = TestKaParser.test_parser.__set_specific_reqs__()
+        s = TestKaParser.test_parser._extract_specific_reqs()
         self.assertIn("StreetScape", s.keys())
 
     def test_set_system_notes(self):
-        s = TestKaParser.test_parser.__set_system_notes__()
+        s = TestKaParser.test_parser._extract_system_notes()
         self.assertIn("SC", s[0][1])
         self.assertIn("Changed  ", s[0][2])
 
@@ -128,16 +128,16 @@ class TestHsParser(unittest.TestCase):
     test_parser.map_job()  # run this first to make the pandas dataframe table used to store all scraped data
 
     def test_set_id(self):
-        i = TestHsParser.test_parser.__set_id__()
+        i = TestHsParser.test_parser._extract_id()
         self.assertEqual("HSS103120", i)
 
     def test_set_vendor(self):
-        v = TestHsParser.test_parser.__set_vendor__()
+        v = TestHsParser.test_parser._extract_vendor()
         self.assertEqual("joe blogs", v.name_1)
         self.assertEqual(None, v.phone_1)
 
     def test_set_property_type(self):
-        p = TestHsParser.test_parser.__set_property_type__()
+        p = TestHsParser.test_parser._extract_property_type()
         self.assertEqual("Semi-detached House", p)
 
     def test_set_appointment(self):
@@ -154,14 +154,14 @@ class TestHsScraper(unittest.TestCase):
         test_link = '<a href="https://www.housesimple.com/admin/home-visit-supplier/303133/show">'
         with open("G:/EstateAgent/Tests/obj/HS_dashboard.html", "r") as f:
             html = BeautifulSoup(f, "lxml")
-        links = TestHsScraper.s.__get_job_links__(html)
+        links = TestHsScraper.s._get_job_links(html)
         self.assertIn(test_link, str(links[0]))
 
     def test__get_page_fields__(self):
         test_string = "Northamptonshire, NN5 5DA"
         with open("G:/EstateAgent/Tests/obj/HS_job_page.html", "r") as f:
             html = BeautifulSoup(f, "lxml")
-        job_dict = TestHsScraper.s.__get_page_fields__(html)
+        job_dict = TestHsScraper.s._get_page_fields(html)
         self.assertIn(test_string, str(job_dict["JOB_DATA_TABLE"][0]))
 
 
@@ -172,7 +172,7 @@ class TestKaScraper(unittest.TestCase):
         test_link = "javascript:__doPostBack('ctl00$text$GridViewOutstandingCases','Select$0')"
         with open("G:/EstateAgent/Tests/obj/KA_Welcome_page.html", "r") as f:
             html = BeautifulSoup(f, "lxml")
-        links = TestKaScraper.s.__get_job_links__(html)
+        links = TestKaScraper.s._get_job_links(html)
         self.assertIn(test_link, str(links[0]))
 
     def test__get_page_fields__(self):
@@ -182,7 +182,7 @@ class TestKaScraper(unittest.TestCase):
 
         with open("G:/EstateAgent/Tests/obj/KA_job_page.html", "r") as f:
             html = BeautifulSoup(f, "lxml")
-        job_dict = TestKaScraper.s.__get_page_fields__(html)
+        job_dict = TestKaScraper.s._get_page_fields(html)
         self.assertEqual(job_dict["JOB_DATA_AGENT"], agent_test)
         self.assertEqual(job_dict["JOB_DATA_APPOINTMENT"], date_test)
         self.assertIn(history_test, str(job_dict["JOB_DATA_HISTORY_TABLE"]))

@@ -33,15 +33,15 @@ class Scraper:
         :return: None
         """
         # logon and get a driver instance
-        self.driver = self.__logon__()
+        self.driver = self._logon()
         # get list of links to jobs
-        links = self.__get_job_links__()
+        links = self._get_job_links()
         # parse the linked pages into Job instances
-        jobs = self.__get_jobs__(links)
-        self.__process_jobs__(jobs)
+        jobs = self._get_jobs(links)
+        self._process_jobs(jobs)
         self.driver.quit()
 
-    def __logon__(self,landing_pg=None):
+    def _logon(self, landing_pg=None):
         """
         Logon to a web site using credentials and web addresses from ConfigXX
         :return Selenium webdriver
@@ -78,7 +78,7 @@ class Scraper:
         # return the selenium browser driver
         return driver
 
-    def __get_job_links__(self, html=None):
+    def _get_job_links(self, html=None):
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link].
         Create a Job class object for each page visited
@@ -90,15 +90,15 @@ class Scraper:
         # find all links pointing to job pages from the landing page
         return html.find_all('a', href=re.compile(self.config.REGEXP["JOB_PAGE_LINK"]))
 
-    def __get_jobs__(self, links):
+    def _get_jobs(self, links):
         """
 
         :param links: list of html <a> tags containing href to page with details of a job
         :return list : Job objects, one for each link
         """
-        return [self.__scrape_job__(link) for link in links]
+        return [self._scrape_job(link) for link in links]
 
-    def __scrape_job__(self, link):
+    def _scrape_job(self, link):
         """
         Scrape the web page specified by 'link' and parse it into a Job object.
         :param link : BeautifulSoup.Tag pointing to job page
@@ -109,7 +109,7 @@ class Scraper:
         python_button = self.driver.find_element_by_xpath('//a[@href="' + link['href'] + '"]')
         python_button.click()
         # create a dict of scraped page data matching ConfigXX specifications
-        job_dict = self.__get_page_fields__()
+        job_dict = self._get_page_fields()
         # create a new Job instance to store the scraped and cleaned data
         job = Classes.Job()
         # instantiate a Parser and map the scraped page data stored in job_dict onto Job attributes
@@ -119,7 +119,7 @@ class Scraper:
         self.driver.execute_script("window.history.go(-1)")
         return job
 
-    def __get_page_fields__(self, html=None):
+    def _get_page_fields(self, html=None):
         """
         Read required data from ConfigXX.JOB_PAGE_DATA and ConfigXX.JOB_PAGE_TABLES.
         Scrape that data into a dict.
@@ -149,7 +149,7 @@ class Scraper:
         return job_dict
 
     @staticmethod
-    def __process_jobs__(jobs):
+    def _process_jobs(jobs):
         """
         Placeholder for further processing.
         Will eventually store the jobs in a DB via Django.
@@ -164,7 +164,7 @@ class Scraper:
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     @staticmethod
-    def __save_obj_to_file__(obj, name):
+    def _save_obj_to_file(obj, name):
         """
         Use pickle to save objects to file for use in unit testing.
         :param obj: object to be saved
@@ -180,11 +180,11 @@ class Scraper:
         # --------------------------TO USE THESE METHODS UN-COMMENT AND INSERT WHERE NEEDED-----------------------------
         # # create sample data RUN ONCE!!
         # sys.setrecursionlimit(10000) # pickle can get deep!
-        # self.__save_obj_to_file__(obj, "filename")
+        # self._save_obj_to_file(obj, "filename")
         # --------------------------------------------------------------------------------------------------------------
 
     @staticmethod
-    def __load_obj__(name):
+    def _load_obj(name):
         """
         Load pickled data.
         :param name: file to load
@@ -212,7 +212,7 @@ class HsScraper(Scraper):
     def __init__(self):
         super().__init__(config=ConfigHS, parser=Parsers.HsParser)
 
-    def __get_job_links__(self, html=None):
+    def _get_job_links(self, html=None):
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link] that are in the CONFIRMED_HOME_VISIT_TABLE and have
         a status indicating the job is live. i.e all jobs with a status of confirmed.
@@ -233,7 +233,7 @@ class HsScraper(Scraper):
         # all live jobs have a status of "confirmed" so make a list of those [] = table headings
         return [row["href"] for _, row in df.iterrows() if row[ConfigHS.JOB_STATUS] == ConfigHS.JOB_OPEN]
 
-    def __get_page_fields__(self, html=None):
+    def _get_page_fields(self, html=None):
         """
         Read required data from ConfigHS.JOB_PAGE_TABLES.
         Scrape that data into a dict.
