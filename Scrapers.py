@@ -35,9 +35,9 @@ class Scraper:
         # logon and get a driver instance
         self.driver = self._logon()
         # get list of links to jobs
-        links = self._get_job_links()
+        links = self._extract_job_links()
         # parse the linked pages into Job instances
-        jobs = self._get_jobs(links)
+        jobs = self._extract_jobs(links)
         self._process_jobs(jobs)
         self.driver.quit()
 
@@ -78,7 +78,7 @@ class Scraper:
         # return the selenium browser driver
         return driver
 
-    def _get_job_links(self, html=None):
+    def _extract_job_links(self, html=None):
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link].
         Create a Job class object for each page visited
@@ -90,7 +90,7 @@ class Scraper:
         # find all links pointing to job pages from the landing page
         return html.find_all('a', href=re.compile(self.config.REGEXP["JOB_PAGE_LINK"]))
 
-    def _get_jobs(self, links):
+    def _extract_jobs(self, links):
         """
 
         :param links: list of html <a> tags containing href to page with details of a job
@@ -109,7 +109,7 @@ class Scraper:
         python_button = self.driver.find_element_by_xpath('//a[@href="' + link['href'] + '"]')
         python_button.click()
         # create a dict of scraped page data matching ConfigXX specifications
-        job_dict = self._get_page_fields()
+        job_dict = self._extract_page_fields()
         # create a new Job instance to store the scraped and cleaned data
         job = Classes.Job()
         # instantiate a Parser and map the scraped page data stored in job_dict onto Job attributes
@@ -119,7 +119,7 @@ class Scraper:
         self.driver.execute_script("window.history.go(-1)")
         return job
 
-    def _get_page_fields(self, html=None):
+    def _extract_page_fields(self, html=None):
         """
         Read required data from ConfigXX.JOB_PAGE_DATA and ConfigXX.JOB_PAGE_TABLES.
         Scrape that data into a dict.
@@ -212,7 +212,7 @@ class HsScraper(Scraper):
     def __init__(self):
         super().__init__(config=ConfigHS, parser=Parsers.HsParser)
 
-    def _get_job_links(self, html=None):
+    def _extract_job_links(self, html=None):
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link] that are in the CONFIRMED_HOME_VISIT_TABLE and have
         a status indicating the job is live. i.e all jobs with a status of confirmed.
@@ -233,7 +233,7 @@ class HsScraper(Scraper):
         # all live jobs have a status of "confirmed" so make a list of those [] = table headings
         return [row["href"] for _, row in df.iterrows() if row[ConfigHS.JOB_STATUS] == ConfigHS.JOB_OPEN]
 
-    def _get_page_fields(self, html=None):
+    def _extract_page_fields(self, html=None):
         """
         Read required data from ConfigHS.JOB_PAGE_TABLES.
         Scrape that data into a dict.

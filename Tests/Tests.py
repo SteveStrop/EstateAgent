@@ -154,14 +154,14 @@ class TestHsScraper(unittest.TestCase):
         test_link = '<a href="https://www.housesimple.com/admin/home-visit-supplier/303133/show">'
         with open("G:/EstateAgent/Tests/obj/HS_dashboard.html", "r") as f:
             html = BeautifulSoup(f, "lxml")
-        links = TestHsScraper.s._get_job_links(html)
+        links = TestHsScraper.s._extract_job_links(html)
         self.assertIn(test_link, str(links[0]))
 
     def test__get_page_fields__(self):
         test_string = "Northamptonshire, NN5 5DA"
         with open("G:/EstateAgent/Tests/obj/HS_job_page.html", "r") as f:
             html = BeautifulSoup(f, "lxml")
-        job_dict = TestHsScraper.s._get_page_fields(html)
+        job_dict = TestHsScraper.s._extract_page_fields(html)
         self.assertIn(test_string, str(job_dict["JOB_DATA_TABLE"][0]))
 
 
@@ -172,7 +172,7 @@ class TestKaScraper(unittest.TestCase):
         test_link = "javascript:__doPostBack('ctl00$text$GridViewOutstandingCases','Select$0')"
         with open("G:/EstateAgent/Tests/obj/KA_Welcome_page.html", "r") as f:
             html = BeautifulSoup(f, "lxml")
-        links = TestKaScraper.s._get_job_links(html)
+        links = TestKaScraper.s._extract_job_links(html)
         self.assertIn(test_link, str(links[0]))
 
     def test__get_page_fields__(self):
@@ -182,7 +182,7 @@ class TestKaScraper(unittest.TestCase):
 
         with open("G:/EstateAgent/Tests/obj/KA_job_page.html", "r") as f:
             html = BeautifulSoup(f, "lxml")
-        job_dict = TestKaScraper.s._get_page_fields(html)
+        job_dict = TestKaScraper.s._extract_page_fields(html)
         self.assertEqual(job_dict["JOB_DATA_AGENT"], agent_test)
         self.assertEqual(job_dict["JOB_DATA_APPOINTMENT"], date_test)
         self.assertIn(history_test, str(job_dict["JOB_DATA_HISTORY_TABLE"]))
