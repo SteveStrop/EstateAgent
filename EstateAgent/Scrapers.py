@@ -37,8 +37,12 @@ class Scraper:
         # parse the linked pages into Job instances
         jobs = self.extract_jobs(links)
         self._process_jobs(jobs)
-        self.driver.quit()
+        self.scraper_close()
         return jobs
+
+    def scraper_close(self):
+
+        self.driver.quit()
 
     def _logon(self, landing_pg=None):
         """
@@ -97,9 +101,9 @@ class Scraper:
         :param links: list of html <a> tags containing href to page with details of a job
         :return list : Job objects, one for each link
         """
-        return [self._scrape_job(link) for link in links]
+        return [self.extract_job(link) for link in links]
 
-    def _scrape_job(self, link):
+    def extract_job(self, link):
         """
         Scrape the web page specified by 'link' and parse it into a Job object.
         :param link : BeautifulSoup.Tag pointing to job page
@@ -258,11 +262,13 @@ class HsScraper(Scraper):
 
 
 if __name__ == '__main__':
-    # k = KaScraper()
+    k = KaScraper()
     # h = HsScraper()
     # key_agent_jobs = k.scrape_site()
     # house_simple_jobs = h.scrape_site()
     # print(key_agent_jobs)
-    jobs_links = KaScraper().extract_job_links()
-    for link in jobs_links:
-        print(link)
+    jobs_links = k.extract_job_links()
+    for l in jobs_links:
+        job= k.extract_job(l)
+        print(job.id)
+
