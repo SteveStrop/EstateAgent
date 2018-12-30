@@ -1,8 +1,6 @@
 from selenium.webdriver.common.by import By
 from datetime import datetime
-import Scrapers
-import ConfigKA
-from selenium import webdriver
+from EstateAgent import ConfigKA, Scrapers
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 

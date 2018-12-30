@@ -154,7 +154,7 @@ class TestHsScraper(unittest.TestCase):
         test_link = '<a href="https://www.housesimple.com/admin/home-visit-supplier/303133/show">'
         with open("G:/EstateAgent/Tests/obj/HS_dashboard.html", "r") as f:
             html = BeautifulSoup(f, "lxml")
-        links = TestHsScraper.s._extract_job_links(html)
+        links = TestHsScraper.s.extract_job_links(html)
         self.assertIn(test_link, str(links[0]))
 
     def test__get_page_fields__(self):
@@ -172,7 +172,7 @@ class TestKaScraper(unittest.TestCase):
         test_link = "javascript:__doPostBack('ctl00$text$GridViewOutstandingCases','Select$0')"
         with open("G:/EstateAgent/Tests/obj/KA_Welcome_page.html", "r") as f:
             html = BeautifulSoup(f, "lxml")
-        links = TestKaScraper.s._extract_job_links(html)
+        links = TestKaScraper.s.extract_job_links(html)
         self.assertIn(test_link, str(links[0]))
 
     def test__get_page_fields__(self):

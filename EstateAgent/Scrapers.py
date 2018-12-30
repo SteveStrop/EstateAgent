@@ -28,15 +28,14 @@ class Scraper:
 
     def scrape_site(self):
         """
-        Use Selenium to log on and scrape data from the website specified in ConfigfXX.
-        :return: None
+        Scrape a whole site and parse all found jobs into Job objects.
+        Uses Selenium to log on and scrape data from the website specified in ConfigfXX.
+        :return: list of Job objects
         """
-        # logon and get a driver instance
-        self.driver = self._logon()
         # get list of links to jobs
-        links = self._extract_job_links()
+        links = self.extract_job_links()
         # parse the linked pages into Job instances
-        jobs = self._extract_jobs(links)
+        jobs = self.extract_jobs(links)
         self._process_jobs(jobs)
         self.driver.quit()
         return jobs
@@ -78,21 +77,23 @@ class Scraper:
         # return the selenium browser driver
         return driver
 
-    def _extract_job_links(self, html=None):
+    def extract_job_links(self, html=None):
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link].
         Create a Job class object for each page visited
-        :return list [<a> tags containing href to job pages]"""
+        :return list of hrefs to job pages"""
 
+        # logon and get a driver instance
+        self.driver = self._logon()
         # get html to read if none passed
         if html is None:
             html = BeautifulSoup(self.driver.page_source, 'lxml')
         # find all links pointing to job pages from the landing page
         return html.find_all('a', href=re.compile(self.config.REGEXP["JOB_PAGE_LINK"]))
 
-    def _extract_jobs(self, links):
+    def extract_jobs(self, links):
         """
-
+        Take a list of job hrefs and return a list of Job objects containing data scraped from the href
         :param links: list of html <a> tags containing href to page with details of a job
         :return list : Job objects, one for each link
         """
@@ -210,7 +211,7 @@ class HsScraper(Scraper):
     def __init__(self):
         super().__init__(config=ConfigHS, parser=Parsers.HsParser)
 
-    def _extract_job_links(self, html=None):
+    def extract_job_links(self, html=None):
         """
         Crawl a list of pages matching Config.REGEXP[job_page_link] that are in the CONFIRMED_HOME_VISIT_TABLE and have
         a status indicating the job is live. i.e all jobs with a status of confirmed.
@@ -218,6 +219,10 @@ class HsScraper(Scraper):
         @param: html : beautiful soup object
         :return jobs : list [Job objects]
         """
+
+        # logon and get a driver instance
+        self.driver = self._logon()
+
         # get html to read if none passed
         if html is None:
             html = BeautifulSoup(self.driver.page_source, 'lxml')
@@ -253,8 +258,11 @@ class HsScraper(Scraper):
 
 
 if __name__ == '__main__':
-    k = KaScraper()
-    h = HsScraper()
-    key_agent_jobs = k.scrape_site()
-    house_simple_jobs = h.scrape_site()
-    print(key_agent_jobs)
+    # k = KaScraper()
+    # h = HsScraper()
+    # key_agent_jobs = k.scrape_site()
+    # house_simple_jobs = h.scrape_site()
+    # print(key_agent_jobs)
+    jobs_links = KaScraper().extract_job_links()
+    for link in jobs_links:
+        print(link)
