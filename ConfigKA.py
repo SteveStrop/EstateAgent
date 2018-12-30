@@ -1,10 +1,12 @@
-import pw
+from EstateAgent import pw
 
 """Configuration file containing complete specifications for accessing a client's webpage to enable
 scraping of job related data
 """
 # Environment variables-------------------------------------------------------------------------------------------------
-CHROME_DRIVER = "C:/Python36/selenium/webdriver/chrome/chromedriver.exe"  # this should be the same for all configXX
+CHROME_DRIVER = '/usr/bin/chromedriver'# "C:/Python36/selenium/webdriver/chrome/chromedriver.exe"  # this should be the same for all configXX
+#sdf
+
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #

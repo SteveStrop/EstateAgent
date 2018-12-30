@@ -1,8 +1,8 @@
-import pickle
 import unittest
-from Classes import *
-from Parsers import *
-from Scrapers import *
+
+from EstateAgent.Classes import *
+from EstateAgent.Parsers import *
+from EstateAgent.Scrapers import *
 
 
 def import_test_data():

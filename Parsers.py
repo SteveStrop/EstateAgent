@@ -1,8 +1,9 @@
-import re
-import pandas as pd
 import datetime as dt
-import ConfigKA, ConfigHS
-import Classes
+import re
+
+import pandas as pd
+
+from EstateAgent import ConfigHS, ConfigKA, Classes
 
 
 class Parser:
@@ -12,9 +13,8 @@ class Parser:
     Parser maps 'ConfigXx.JOB_PAGE_DATA(and/or JOB_PAGE_TABLES)' to Job class attributes
     """
 
-    def __init__(self, job, scraper_data, config=None):
+    def __init__(self,scraper_data, config=None):
         """
-        :param job          : Job object where parsed data will be stored
         :param scraper_data : dict mirroring ConfigXx.JOB_PAGE_DATA.
                                It contains a complete description of a job scraped from a config's website
         :param config       : Master configuration file detailing how the parser should read the scraped data.
@@ -25,7 +25,7 @@ class Parser:
         self.scraper_data = scraper_data
         self.time = None
         self.address = None
-        self.job = job
+        self.job = Classes.Job()
 
     def map_job(self):
         """
@@ -114,8 +114,6 @@ class Parser:
         """
         return NotImplementedError
 
-
-
     @staticmethod
     def set_time(time, time_format):
         """
@@ -172,13 +170,13 @@ class KaParser(Parser):
     Job attributes are parsed by cross referencing this table.
     """
 
-    def __init__(self, job, scraper_data):
-        super().__init__(job, scraper_data, config=ConfigKA)
+    def __init__(self, scraper_data):
+        super().__init__(scraper_data, config=ConfigKA)
 
     def map_job(self):
         """
         Map each data field from the job page to an attribute of self.job
-        :return None
+        :return Job object
         """
         self.job.client = self.client
         self.job.id = self._extract_id()
@@ -195,6 +193,7 @@ class KaParser(Parser):
         self.job.specific_reqs = self._extract_specific_reqs()
         self.job.system_notes = self._extract_system_notes()
         self.job.status = Classes.Job.ACTIVE
+        return self.job
 
     def _extract_id(self):
         """
@@ -350,14 +349,14 @@ class HsParser(Parser):
     Job attributes are parsed from this table.
     """
 
-    def __init__(self, job, scraper_data):
-        super().__init__(job, scraper_data, config=ConfigHS)
+    def __init__(self, scraper_data):
+        super().__init__(scraper_data, config=ConfigHS)
         self.table = None  # maps to ConfigHS.JOB_PAGE_DATA
 
     def map_job(self):
         """
         Map each data field from the job page to an attribute of self.job
-        :return None
+        :return Job object
         """
 
         # get the data and read it into a pandas table
@@ -374,6 +373,7 @@ class HsParser(Parser):
         self.job.floorplan = True
         self.job.photos = 10
         self.job.status = Classes.Job.ACTIVE
+        return self.job
 
     def _extract_id(self):
         """

@@ -1,13 +1,12 @@
 # import sys  # only used when running pickle dumps
 import pickle
 import re
+
 import pandas as pd
-from selenium import webdriver
 from bs4 import BeautifulSoup
-import ConfigKA
-import ConfigHS
-import Classes
-import Parsers
+from selenium import webdriver
+
+from EstateAgent import ConfigKA, ConfigHS, Parsers
 
 
 class Scraper:
@@ -40,6 +39,7 @@ class Scraper:
         jobs = self._extract_jobs(links)
         self._process_jobs(jobs)
         self.driver.quit()
+        return jobs
 
     def _logon(self, landing_pg=None):
         """
@@ -110,11 +110,9 @@ class Scraper:
         python_button.click()
         # create a dict of scraped page data matching ConfigXX specifications
         job_dict = self._extract_page_fields()
-        # create a new Job instance to store the scraped and cleaned data
-        job = Classes.Job()
-        # instantiate a Parser and map the scraped page data stored in job_dict onto Job attributes
-        p = self.parser(job, job_dict)  # todo make this parser a variable imported from Config
-        p.map_job()
+        # instantiate a Parser and map the scraped page data stored in job_dict onto a new Job object
+        p = self.parser(job_dict)  # todo make this parser a variable imported from Config
+        job = p.map_job()
         # click the back button
         self.driver.execute_script("window.history.go(-1)")
         return job
@@ -257,5 +255,6 @@ class HsScraper(Scraper):
 if __name__ == '__main__':
     k = KaScraper()
     h = HsScraper()
-    k.scrape_site()
-    h.scrape_site()
+    key_agent_jobs = k.scrape_site()
+    house_simple_jobs = h.scrape_site()
+    print(key_agent_jobs)
